@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/29281577/README.md)
+[README.md](https://github.com/user-attachments/files/29299931/README.md)
 # RE/MAX Terra · Dashboard de Asesores
 
 Dashboard de rendimiento (semáforo por cohorte) con datos de enero–junio 2026.
@@ -13,7 +13,7 @@ Dashboard de rendimiento (semáforo por cohorte) con datos de enero–junio 2026
 El dashboard está organizado en **cuatro pestañas** (secciones agrupadas por coherencia) para que todo se vea ordenado y no amontonado:
 
 1. **📅 Junio · Mes actual** — KPIs del mes (leads, recorridos, opciones mostradas, opcionadas renta/venta) **solo de junio**, más una tabla de actividad por asesor del mes.
-2. **🏆 Desempeño** — Élite de la oficina (Alma Verónica #1, Pilar #2, Erik #3, mayor % de meta) y "La recta final": quienes aún no cierran su meta de cohorte pero están cerca, con el monto exacto que les falta y un mensaje motivacional.
+2. **🏆 Desempeño** — Élite de la oficina (Alma Verónica #1, Pilar #2, Erik #3), **ordenada por número de cierres del semestre**, y "La recta final": quienes aún no cierran su meta de cohorte pero están cerca, con el monto exacto que les falta y un mensaje motivacional. Todos los ingresos usan la **comisión del asesor** (no la de la oficina).
 3. **📈 Acumulado semestre** — Gráfica de leads acumulados (total 2,529) y gráfica de cierres 2026 (ventas vs rentas, con volumen). Los cierres solo incluyen operaciones CERRADA con **fecha de operación en 2026** (se excluyeron las de 2025 y se depuraron duplicados).
 4. **👥 Detalle por asesor** — Tarjeta individual por asesor, agrupada por color de semáforo, con actividad de mayo y junio actualizada.
 
