@@ -1,6 +1,6 @@
 import { Target, Users } from "lucide-react";
 import type { DashboardData } from "../types";
-import { META_ANUAL_ASESOR, META_COHORTE } from "../config";
+import { META_COHORTE } from "../config";
 import { fMoney, nivelSemaforo, safeDiv } from "../lib/metrics";
 import { Avatar, Card, MonthChip, PageHead, Progress, SemaforoBadge } from "../components/ui";
 
@@ -8,9 +8,10 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
   const cohortePct = safeDiv(data.totals.comAsesor, META_COHORTE) * 100;
 
   const lista = data.advisors
-    .filter((a) => a.activo)
-    .map((a) => ({ a, pct: safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100 }))
+    .filter((a) => a.activo && a.metaIndividual != null && a.metaIndividual > 0)
+    .map((a) => ({ a, pct: safeDiv(a.totales.comTotal, a.metaIndividual!) * 100 }))
     .sort((x, y) => y.pct - x.pct);
+  const sinMeta = data.advisors.filter((a) => a.activo && !(a.metaIndividual != null && a.metaIndividual > 0));
 
   const enMeta = lista.filter((x) => x.pct >= 75).length;
   const enRiesgo = lista.filter((x) => x.pct >= 50 && x.pct < 75).length;
@@ -20,7 +21,7 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
     <>
       <PageHead
         title="Metas"
-        subtitle={`Meta anual individual: ${fMoney(META_ANUAL_ASESOR)} (Comisión Oficina + Comisión Asesor)`}
+        subtitle="Meta individual escalonada por antigüedad (Comisión Oficina + Comisión Asesor)"
         tools={<MonthChip current={data.currentMonth} previous={data.previousMonth} year={data.year} />}
       />
 
@@ -53,9 +54,11 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
               <thead>
                 <tr>
                   <th>Asesor</th>
+                  <th className="r">Antigüedad</th>
+                  <th className="r">Meta al mes</th>
                   <th className="r">Acumulado (X + Y)</th>
                   <th className="r">Restante</th>
-                  <th style={{ width: "26%" }}>Avance</th>
+                  <th style={{ width: "22%" }}>Avance</th>
                   <th>Semáforo</th>
                 </tr>
               </thead>
@@ -68,8 +71,10 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
                         <span style={{ fontWeight: 600 }}>{a.nombre}</span>
                       </span>
                     </td>
+                    <td className="r num">{a.mesesAntiguedad} m</td>
+                    <td className="r num">{fMoney(a.metaIndividual!)}</td>
                     <td className="r num">{fMoney(a.totales.comTotal)}</td>
-                    <td className="r num">{fMoney(Math.max(META_ANUAL_ASESOR - a.totales.comTotal, 0))}</td>
+                    <td className="r num">{fMoney(Math.max(a.metaIndividual! - a.totales.comTotal, 0))}</td>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ flex: 1 }}><Progress pct={pct} /></div>
@@ -82,6 +87,11 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
               </tbody>
             </table>
           </div>
+          {sinMeta.length > 0 && (
+            <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 12 }}>
+              {sinMeta.length} asesor{sinMeta.length > 1 ? "es" : ""} sin meta calculada (en capacitación o sin fecha de ingreso registrada): {sinMeta.map((a) => a.nombre).join(", ")}.
+            </p>
+          )}
         </Card>
       </div>
     </>

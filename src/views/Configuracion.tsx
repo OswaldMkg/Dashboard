@@ -1,7 +1,7 @@
-import { AlertTriangle, CalendarClock, Database, FileSpreadsheet, GitMerge, RefreshCw, Users } from "lucide-react";
+import { AlertTriangle, CalendarClock, Database, FileSpreadsheet, GitMerge, RefreshCw, Target, Users } from "lucide-react";
 import validationJson from "../generated/validation.json";
 import type { DashboardData, ValidationReport } from "../types";
-import { META_ANUAL_ASESOR, META_COHORTE, MESES_LARGOS } from "../config";
+import { META_COHORTE, MESES_CAPACITACION, MESES_LARGOS, TABLA_META_ANTIGUEDAD } from "../config";
 import { fMoney } from "../lib/metrics";
 import { Card, PageHead } from "../components/ui";
 
@@ -23,16 +23,36 @@ export function Configuracion({ data }: { data: DashboardData }) {
         <Card title="Archivos fuente" icon={<FileSpreadsheet size={14} />}>
           <div className="pair-row"><span className="k">Opciones y recorridos</span><span className="v">{validation.archivos.opciones}</span></div>
           <div className="pair-row"><span className="k">Apartados y cierres</span><span className="v">{validation.archivos.apartado}</span></div>
+          {validation.archivos.membresias && <div className="pair-row"><span className="k">Membresías (Fecha Sir)</span><span className="v">{validation.archivos.membresias}</span></div>}
           <div className="pair-row"><span className="k">Datos generados</span><span className="v num">{fecha.toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" })}</span></div>
           <div className="pair-row"><span className="k">Mes detectado automáticamente</span><span className="v">{MESES_LARGOS[data.currentMonth - 1]} {data.year}</span></div>
         </Card>
         <Card title="Metas configuradas" icon={<Database size={14} />}>
-          <div className="pair-row"><span className="k">Meta anual por asesor (X + Y)</span><span className="v num">{fMoney(META_ANUAL_ASESOR)}</span></div>
-          <div className="pair-row"><span className="k">Meta anual del cohorte (solo Y)</span><span className="v num">{fMoney(META_COHORTE)}</span></div>
+          <div className="pair-row"><span className="k">Meta del cohorte (solo columna Y)</span><span className="v num">{fMoney(META_COHORTE)}</span></div>
+          <div className="pair-row"><span className="k">Meta individual (X + Y)</span><span className="v">Escalonada por antigüedad</span></div>
+          <div className="pair-row"><span className="k">Capacitación inicial descontada</span><span className="v num">{MESES_CAPACITACION} meses</span></div>
           <div className="pair-row"><span className="k">Semáforo</span><span className="v">Rojo &lt;50% · Ámbar 50–74% · Verde ≥75%</span></div>
           <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "10px 0 0" }}>
             La meta del cohorte no existe en los archivos fuente; se ajusta en <code>src/config.ts</code>.
           </p>
+        </Card>
+      </div>
+
+      <div className="section">
+        <Card title="Meta individual escalonada por antigüedad" icon={<Target size={14} />}>
+          <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0 }}>
+            La antigüedad se cuenta desde la <strong>Fecha Sir</strong> (archivo de membresías), restando {MESES_CAPACITACION} meses de capacitación inicial. La meta acumula la tarifa de cada mes activo: cada mes suma según el tramo en el que cae, y el total crece automáticamente cada mes.
+          </p>
+          <div className="table-wrap" style={{ maxWidth: 420 }}>
+            <table className="data">
+              <thead><tr><th>Antigüedad (meses activos)</th><th className="r">Aporte por mes</th></tr></thead>
+              <tbody>
+                {TABLA_META_ANTIGUEDAD.map((t) => (
+                  <tr key={t.rango}><td>{t.rango}</td><td className="r num">{fMoney(t.monto)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </div>
 
@@ -72,7 +92,7 @@ export function Configuracion({ data }: { data: DashboardData }) {
       <div className="section">
         <Card title="Cómo actualizar el dashboard cada mes" icon={<RefreshCw size={14} />}>
           <ol className="list-report" style={{ fontSize: 13.5, lineHeight: 1.9 }}>
-            <li>Reemplaza los dos archivos de la carpeta <code>data/</code> por las versiones nuevas. El sistema los localiza por nombre: uno debe contener la palabra <strong>OPCIONES</strong> y el otro <strong>APARTADO</strong>; el resto del nombre no importa.</li>
+            <li>Reemplaza los archivos de la carpeta <code>data/</code> por las versiones nuevas. El sistema los localiza por nombre: uno debe contener <strong>OPCIONES</strong>, otro <strong>APARTADO</strong> y otro <strong>MEMBRES</strong>(ías); el resto del nombre no importa. El de membresías solo cambia cuando entra o sale un asesor.</li>
             <li>Sube los cambios al repositorio (<code>git add . && git commit -m "Datos [mes]" && git push</code>).</li>
             <li>Vercel compila automáticamente: el proceso de build vuelve a leer los Excel, regenera los datos, detecta el mes más reciente y publica el dashboard actualizado. No se modifica código.</li>
             <li>Para verlo en tu computadora antes de publicar: <code>npm run dev</code>.</li>

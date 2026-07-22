@@ -27,6 +27,8 @@ export interface AdvisorTotals {
   opciones: number;
   opcionadas: number;
   leads: number;
+  opcionadasRenta: number;
+  opcionadasVenta: number;
   cierres: number;
   apartados: number;
   pendientes: number;
@@ -40,10 +42,15 @@ export interface Advisor {
   nombre: string;
   enRoster: boolean;
   activo: boolean;
+  fechaSir: string | null;
+  mesesAntiguedad: number;
+  metaIndividual: number | null;
   actividad: {
     recorridos: number[];
     opciones: number[];
     opcionadas: number[];
+    opcionadasRenta: number[];
+    opcionadasVenta: number[];
     leads: number[];
   };
   cierresMes: number[];
@@ -66,6 +73,8 @@ export interface DashboardData {
     recorridos: number;
     opciones: number;
     opcionadas: number;
+    opcionadasRenta: number;
+    opcionadasVenta: number;
     leads: number;
     apartados: number;
     cierres: number;
@@ -80,6 +89,7 @@ export interface DashboardData {
       recorridos: number[];
       opciones: number[];
       opcionadas: number[];
+      leads: number[];
       apartados: number[];
       cierres: number[];
       comOficina: number[];
@@ -90,7 +100,7 @@ export interface DashboardData {
 
 export interface ValidationReport {
   generadoEl: string;
-  archivos: { opciones: string; apartado: string };
+  archivos: { opciones: string; apartado: string; membresias: string | null };
   duplicadosEliminados: string[];
   fechasCorregidas: string[];
   nombresNormalizados: string[];

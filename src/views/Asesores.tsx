@@ -11,7 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import type { Advisor, DashboardData } from "../types";
-import { META_ANUAL_ASESOR, MESES_CORTOS, MESES_LARGOS } from "../config";
+import { MESES_CORTOS, MESES_LARGOS } from "../config";
 import { fMoney, fNum, nivelSemaforo, rankOf, safeDiv } from "../lib/metrics";
 import { Avatar, Card, Delta, MonthChip, PageHead, Progress, SemaforoBadge } from "../components/ui";
 import { BarrasMensuales } from "../components/charts";
@@ -59,7 +59,7 @@ function AsesoresGrid({ data, onSelect }: { data: DashboardData; onSelect: (n: s
       />
       <div className="grid adv-grid">
         {list.map((a) => {
-          const metaPct = safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100;
+          const metaPct = a.metaIndividual ? safeDiv(a.totales.comTotal, a.metaIndividual) * 100 : null;
           return (
             <div className="card adv-card" key={a.nombre} onClick={() => onSelect(a.nombre)} role="button" tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && onSelect(a.nombre)}>
@@ -79,10 +79,10 @@ function AsesoresGrid({ data, onSelect }: { data: DashboardData; onSelect: (n: s
               </div>
               <div style={{ marginTop: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-3)", marginBottom: 5 }}>
-                  <span>Meta anual</span>
-                  <span className="num">{Math.round(metaPct)}%</span>
+                  <span>Meta por antigüedad{a.metaIndividual ? ` · ${fMoney(a.metaIndividual)}` : ""}</span>
+                  <span className="num">{metaPct === null ? "—" : `${Math.round(metaPct)}%`}</span>
                 </div>
-                <Progress pct={metaPct} />
+                <Progress pct={metaPct ?? 0} />
               </div>
             </div>
           );
@@ -99,8 +99,9 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
   const ci = cm - 1;
   const pi = pm ? pm - 1 : null;
 
-  const metaPct = safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100;
-  const restante = Math.max(META_ANUAL_ASESOR - a.totales.comTotal, 0);
+  const tieneMeta = a.metaIndividual != null && a.metaIndividual > 0;
+  const metaPct = tieneMeta ? safeDiv(a.totales.comTotal, a.metaIndividual!) * 100 : 0;
+  const restante = tieneMeta ? Math.max(a.metaIndividual! - a.totales.comTotal, 0) : 0;
 
   const parMes = (serie: number[]) => ({
     actual: serie[ci],
@@ -127,7 +128,7 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
 
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
         <Avatar nombre={a.nombre} lg />
-        <SemaforoBadge pct={metaPct} />
+        {tieneMeta && <SemaforoBadge pct={metaPct} />}
         {a.totales.pendientes > 0 && (
           <span className="badge info"><Clock size={13} /> {a.totales.pendientes} operación{a.totales.pendientes > 1 ? "es" : ""} pendiente{a.totales.pendientes > 1 ? "s" : ""}</span>
         )}
@@ -157,16 +158,24 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
           <BarrasMensuales series={a.cierresMes} hasta={cm} alto={150} />
         </Card>
 
-        <Card title={`Meta anual individual · ${fMoney(META_ANUAL_ASESOR)}`} icon={<Target size={14} />} className="highlight-card">
-          <div className="pair-row"><span className="k">Monto acumulado (Oficina + Asesor)</span><span className="v num">{fMoney(a.totales.comTotal)}</span></div>
-          <div className="pair-row"><span className="k">Comisión Oficina (X)</span><span className="v num">{fMoney(a.totales.comOficina)}</span></div>
-          <div className="pair-row"><span className="k">Comisión Asesor (Y)</span><span className="v num">{fMoney(a.totales.comAsesor)}</span></div>
-          <div className="pair-row"><span className="k">Porcentaje de avance</span><span className="v num">{metaPct.toFixed(1)}%</span></div>
-          <div className="pair-row"><span className="k">Cantidad restante</span><span className="v num">{fMoney(restante)}</span></div>
-          <div style={{ marginTop: 14, marginBottom: 8 }}>
-            <Progress pct={metaPct} nivel={nivelSemaforo(metaPct)} />
-          </div>
-          <SemaforoBadge pct={metaPct} />
+        <Card title="Meta individual por antigüedad" icon={<Target size={14} />} className="highlight-card">
+          {tieneMeta ? (
+            <>
+              <div className="pair-row"><span className="k">Antigüedad (menos capacitación)</span><span className="v num">{a.mesesAntiguedad} {a.mesesAntiguedad === 1 ? "mes" : "meses"}</span></div>
+              <div className="pair-row"><span className="k">Meta acumulada al mes</span><span className="v num">{fMoney(a.metaIndividual!)}</span></div>
+              <div className="pair-row"><span className="k">Monto logrado (Oficina + Asesor)</span><span className="v num">{fMoney(a.totales.comTotal)}</span></div>
+              <div className="pair-row"><span className="k">Porcentaje de avance</span><span className="v num">{metaPct.toFixed(1)}%</span></div>
+              <div className="pair-row"><span className="k">Cantidad restante</span><span className="v num">{fMoney(restante)}</span></div>
+              <div style={{ marginTop: 14, marginBottom: 8 }}>
+                <Progress pct={metaPct} nivel={nivelSemaforo(metaPct)} />
+              </div>
+              <SemaforoBadge pct={metaPct} />
+            </>
+          ) : a.metaIndividual === 0 ? (
+            <div className="empty">En periodo de capacitación inicial ({a.fechaSir ? `ingresó ${a.fechaSir}` : "sin fecha"}). La meta comienza a acumularse al tercer mes.</div>
+          ) : (
+            <div className="empty">Sin fecha de ingreso registrada en el archivo de membresías. No es posible calcular la meta por antigüedad.</div>
+          )}
         </Card>
       </div>
 

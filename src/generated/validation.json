@@ -1,8 +1,9 @@
 {
-  "generadoEl": "2026-07-22T18:38:12.301Z",
+  "generadoEl": "2026-07-22T21:34:53.505Z",
   "archivos": {
     "opciones": "OPCIONES.xlsx",
-    "apartado": "APARTADO.xlsx"
+    "apartado": "APARTADO.xlsx",
+    "membresias": "MEMBRESIAS.xlsx"
   },
   "duplicadosEliminados": [
     "Filas 49 y 50 (Judith Diosdado Torres, Cerro grande 135 , priv Juriquilla No ti…): registro duplicado — se conservó la fila 49",
@@ -136,6 +137,15 @@
     "\"Christian Diaz\" → \"Christian Díaz Padilla\""
   ],
   "advertencias": [
+    "Sin fecha de ingreso (Fecha Sir) para \"Consuelo Becerril\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Lorena Payan\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Joel Martínez Rodeíguez\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Luis Eduardo Duval de las Casas\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Lourdes Rodríguez Bautista\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Norma Janet Canaan Enciso\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Adriana Cedillo\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Susana Cruz\" en el archivo de membresías — meta individual no calculada",
+    "Sin fecha de ingreso (Fecha Sir) para \"Consuelo Becerril\" en el archivo de membresías — meta individual no calculada",
     "Asesor externo \"Alejandro Jonguitud\" sin actividad 2026 (solo operaciones de años anteriores) — excluido del dashboard",
     "Asesor externo \"Antonio Martinez\" sin actividad 2026 (solo operaciones de años anteriores) — excluido del dashboard",
     "Asesor externo \"Juan Rodriguez\" sin actividad 2026 (solo operaciones de años anteriores) — excluido del dashboard",

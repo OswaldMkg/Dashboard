@@ -6,6 +6,7 @@ import {
   Clock,
   Eye,
   Filter,
+  Inbox,
   Landmark,
   LineChart,
   Percent,
@@ -61,6 +62,12 @@ export function Resumen({ data }: { data: DashboardData }) {
 
       {/* Indicadores principales */}
       <div className="grid kpi-grid section">
+        <Kpi
+          label="Total Leads"
+          value={fNum(t.leads)}
+          icon={<Inbox size={16} />}
+          sub={prevIdx !== null && <Delta actual={s.leads[mesIdx]} anterior={s.leads[prevIdx]} />}
+        />
         <Kpi
           label="Total Recorridos"
           value={fNum(t.recorridos)}

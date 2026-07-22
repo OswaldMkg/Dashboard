@@ -66,8 +66,10 @@ const findFile = (kw) => {
 };
 const OPCIONES_PATH = findFile("opciones");
 const APARTADO_PATH = findFile("apartado");
+let MEMBRESIAS_PATH = null;
+try { MEMBRESIAS_PATH = findFile("membres"); } catch { /* opcional */ }
 
-const validation = { generadoEl: new Date().toISOString(), archivos: { opciones: OPCIONES_PATH.split("/").pop(), apartado: APARTADO_PATH.split("/").pop() }, duplicadosEliminados: [], fechasCorregidas: [], nombresNormalizados: [], advertencias: [], asesoresFueraDeRoster: [] };
+const validation = { generadoEl: new Date().toISOString(), archivos: { opciones: OPCIONES_PATH.split("/").pop(), apartado: APARTADO_PATH.split("/").pop(), membresias: null }, duplicadosEliminados: [], fechasCorregidas: [], nombresNormalizados: [], advertencias: [], asesoresFueraDeRoster: [] };
 
 /* ------------------------------------------------------------------ */
 /* 1) OPCIONES — hojas mensuales "<MES> 2026"                          */
@@ -99,11 +101,13 @@ for (const { name, month } of monthSheets) {
     if (!key || key.startsWith("total")) break;
     const canon = rosterSet.get(key) ?? String(raw).replace(/\s+/g, " ").trim();
     if (!rosterSet.has(key)) rosterSet.set(key, canon);
-    const prev = actividad[month][canon] ?? { recorridos: 0, opciones: 0, opcionadas: 0, leads: 0 };
+    const prev = actividad[month][canon] ?? { recorridos: 0, opciones: 0, opcionadas: 0, opcionadasRenta: 0, opcionadasVenta: 0, leads: 0 };
     actividad[month][canon] = {
       recorridos: prev.recorridos + num(r[5]),
       opciones: prev.opciones + num(r[6]),
       opcionadas: prev.opcionadas + num(r[1]),
+      opcionadasRenta: prev.opcionadasRenta + num(r[2]),
+      opcionadasVenta: prev.opcionadasVenta + num(r[3]),
       leads: prev.leads + num(r[4]),
     };
   }
@@ -207,6 +211,60 @@ for (const grupo of grupos.values()) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 2.b) MEMBRESIAS — fecha de ingreso (columna "Fecha Sir") por asesor   */
+/*      De aquí sale la antigüedad para la meta individual escalonada.   */
+/* ------------------------------------------------------------------ */
+const MESES_CAPACITACION = 2;
+/** Tabla de tarifa mensual por tramo de antigüedad (meses activos). */
+const TABLA_META = [
+  { hasta: 3, monto: 3000 },
+  { hasta: 6, monto: 5000 },
+  { hasta: 9, monto: 8000 },
+  { hasta: 12, monto: 12000 },
+  { hasta: 18, monto: 16000 },
+  { hasta: Infinity, monto: 20000 },
+];
+const tarifaMes = (m) => TABLA_META.find((t) => m <= t.hasta).monto;
+/** Meta acumulada: suma la tarifa de cada mes activo, de 1 a N. */
+function metaAcumulada(mesesActivos) {
+  let total = 0;
+  for (let m = 1; m <= mesesActivos; m++) total += tarifaMes(m);
+  return total;
+}
+
+const fechaSirPorAsesor = new Map(); // strip(nombre canónico) -> {y, m}
+if (MEMBRESIAS_PATH) {
+  validation.archivos.membresias = MEMBRESIAS_PATH.split("/").pop();
+  const wbMem = XLSX.read(readFileSync(MEMBRESIAS_PATH), { cellDates: true });
+  const wsMem = wbMem.Sheets["Registro de pagos 2026"] ?? wbMem.Sheets[wbMem.SheetNames[0]];
+  const memRows = XLSX.utils.sheet_to_json(wsMem, { header: 1, range: 5, blankrows: false, defval: null });
+  const memList = [];
+  for (const r of memRows) {
+    const nombre = r[1];
+    const fSir = parseFecha(r[3]); // columna D "Fecha Sir"
+    if (!nombre || !fSir) continue;
+    memList.push({ tokens: strip(nombre).split(" ").filter((t) => t.length > 1), fSir, nombre: String(nombre).trim() });
+  }
+  // Asignar la Fecha Sir a cada asesor del roster por coincidencia de tokens
+  // (subconjunto: todos los tokens del nombre de membresía están en el nombre canónico).
+  const asignar = (canon) => {
+    const ctoks = strip(canon).split(" ").filter((t) => t.length > 1);
+    let mejor = null, mejorScore = 0;
+    for (const m of memList) {
+      const overlap = m.tokens.filter((t) => ctoks.includes(t)).length;
+      const subset = m.tokens.every((t) => ctoks.includes(t));
+      if (subset && overlap > mejorScore) { mejor = m; mejorScore = overlap; }
+    }
+    if (mejor) fechaSirPorAsesor.set(strip(canon), mejor.fSir);
+    else validation.advertencias.push(`Sin fecha de ingreso (Fecha Sir) para "${canon}" en el archivo de membresías — meta individual no calculada`);
+  };
+  [...rosterSet.values()].forEach(asignar);
+  Object.values(ALIAS).forEach((v) => { if (!fechaSirPorAsesor.has(strip(v))) asignar(v); });
+} else {
+  validation.advertencias.push("No se encontró el archivo de membresías en /data — las metas individuales por antigüedad no se calcularon");
+}
+
+/* ------------------------------------------------------------------ */
 /* 3) Detección automática de mes actual / anterior                     */
 /* ------------------------------------------------------------------ */
 const mesesConDatos = new Set(monthSheets.map((s) => s.month));
@@ -223,10 +281,14 @@ ops.forEach((o) => { if (o.asesor) advisorNames.add(o.asesor); });
 const emptyMonths = () => Array.from({ length: 12 }, () => 0);
 
 const advisors = [...advisorNames].sort((a, b) => strip(a).localeCompare(strip(b))).map((name) => {
-  const act = { recorridos: emptyMonths(), opciones: emptyMonths(), opcionadas: emptyMonths(), leads: emptyMonths() };
+  const act = { recorridos: emptyMonths(), opciones: emptyMonths(), opcionadas: emptyMonths(), opcionadasRenta: emptyMonths(), opcionadasVenta: emptyMonths(), leads: emptyMonths() };
   for (const [m, byAdv] of Object.entries(actividad)) {
     const row = byAdv[name];
-    if (row) { act.recorridos[m - 1] = row.recorridos; act.opciones[m - 1] = row.opciones; act.opcionadas[m - 1] = row.opcionadas; act.leads[m - 1] = row.leads; }
+    if (row) {
+      act.recorridos[m - 1] = row.recorridos; act.opciones[m - 1] = row.opciones;
+      act.opcionadas[m - 1] = row.opcionadas; act.opcionadasRenta[m - 1] = row.opcionadasRenta;
+      act.opcionadasVenta[m - 1] = row.opcionadasVenta; act.leads[m - 1] = row.leads;
+    }
   }
   const myOps = ops.filter((o) => o.asesor === name);
   const cierres2026 = myOps.filter((o) => o.estatus === "CERRADA" && o.cierreY === YEAR);
@@ -241,6 +303,16 @@ const advisors = [...advisorNames].sort((a, b) => strip(a).localeCompare(strip(b
   const comOficina = comOficinaMes.reduce((a, b) => a + b, 0);
   const comAsesor = comAsesorMes.reduce((a, b) => a + b, 0);
   const enRoster = rosterSet.has(strip(name)) || Object.values(ALIAS).some((v) => strip(v) === strip(name));
+
+  // Antigüedad y meta individual escalonada
+  const fSir = fechaSirPorAsesor.get(strip(name)) ?? null;
+  let mesesAntiguedad = 0;
+  let metaIndividual = null;
+  if (fSir) {
+    const bruto = (YEAR - fSir.y) * 12 + (currentMonth - fSir.m);
+    mesesAntiguedad = Math.max(0, bruto - MESES_CAPACITACION);
+    metaIndividual = metaAcumulada(mesesAntiguedad);
+  }
   const enMesActual = !!actividad[currentMonth]?.[name];
   const con2026 = cierres2026.length + apartados2026.length + pendientes.length + act.recorridos.reduce((a, b) => a + b, 0) + act.opciones.reduce((a, b) => a + b, 0) + act.opcionadas.reduce((a, b) => a + b, 0) > 0;
 
@@ -248,12 +320,17 @@ const advisors = [...advisorNames].sort((a, b) => strip(a).localeCompare(strip(b
     nombre: name,
     enRoster,
     activo: enMesActual || con2026,
+    fechaSir: fSir ? `${fSir.y}-${String(fSir.m).padStart(2, "0")}` : null,
+    mesesAntiguedad,
+    metaIndividual,
     actividad: act,
     cierresMes, apartadosMes, comOficinaMes, comAsesorMes,
     totales: {
       recorridos: act.recorridos.reduce((a, b) => a + b, 0),
       opciones: act.opciones.reduce((a, b) => a + b, 0),
       opcionadas: act.opcionadas.reduce((a, b) => a + b, 0),
+      opcionadasRenta: act.opcionadasRenta.reduce((a, b) => a + b, 0),
+      opcionadasVenta: act.opcionadasVenta.reduce((a, b) => a + b, 0),
       leads: act.leads.reduce((a, b) => a + b, 0),
       cierres: cierres2026.length,
       apartados: apartados2026.length,
@@ -277,6 +354,8 @@ const totals = {
   recorridos: sumBy((a) => a.totales.recorridos),
   opciones: sumBy((a) => a.totales.opciones),
   opcionadas: sumBy((a) => a.totales.opcionadas),
+  opcionadasRenta: sumBy((a) => a.totales.opcionadasRenta),
+  opcionadasVenta: sumBy((a) => a.totales.opcionadasVenta),
   leads: sumBy((a) => a.totales.leads),
   apartados: sumBy((a) => a.totales.apartados),
   cierres: sumBy((a) => a.totales.cierres),
@@ -291,6 +370,7 @@ const totals = {
     recorridos: sumMonths((a) => a.actividad.recorridos),
     opciones: sumMonths((a) => a.actividad.opciones),
     opcionadas: sumMonths((a) => a.actividad.opcionadas),
+    leads: sumMonths((a) => a.actividad.leads),
     apartados: sumMonths((a) => a.apartadosMes),
     cierres: sumMonths((a) => a.cierresMes),
     comOficina: sumMonths((a) => a.comOficinaMes),
