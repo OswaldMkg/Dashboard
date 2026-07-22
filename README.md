@@ -1,51 +1,41 @@
-[README.md](https://github.com/user-attachments/files/29299931/README.md)
-# RE/MAX Terra · Dashboard de Asesores
+[README.md](https://github.com/user-attachments/files/30280912/README.md)
+# RE/MAX Terra · Dashboard Ejecutivo 2026
 
-Dashboard de rendimiento (semáforo por cohorte) con datos de enero–junio 2026.
+Dashboard de desempeño comercial reconstruido desde cero. Lee directamente los
+dos archivos Excel operativos de la oficina y publica un panel ejecutivo en Vercel.
 
-## Archivos
+## Arquitectura
 
-- **`index.html`** — El dashboard completo. Es **un solo archivo autocontenido** (HTML + CSS + JS + datos embebidos). No depende de imágenes ni archivos externos: las gráficas de leads y de cierres están dibujadas con CSS, así que se ve igual en cualquier lugar.
-- **`vercel.json`** — Configuración mínima para el despliegue estático en Vercel (opcional, pero recomendada).
-
-## Qué incluye esta versión
-
-El dashboard está organizado en **cuatro pestañas** (secciones agrupadas por coherencia) para que todo se vea ordenado y no amontonado:
-
-1. **📅 Junio · Mes actual** — KPIs del mes (leads, recorridos, opciones mostradas, opcionadas renta/venta) **solo de junio**, más una tabla de actividad por asesor del mes.
-2. **🏆 Desempeño** — Élite de la oficina (Alma Verónica #1, Pilar #2, Erik #3), **ordenada por número de cierres del semestre**, y "La recta final": quienes aún no cierran su meta de cohorte pero están cerca, con el monto exacto que les falta y un mensaje motivacional. Todos los ingresos usan la **comisión del asesor** (no la de la oficina).
-3. **📈 Acumulado semestre** — Gráfica de leads acumulados (total 2,529) y gráfica de cierres 2026 (ventas vs rentas, con volumen). Los cierres solo incluyen operaciones CERRADA con **fecha de operación en 2026** (se excluyeron las de 2025 y se depuraron duplicados).
-4. **👥 Detalle por asesor** — Tarjeta individual por asesor, agrupada por color de semáforo, con actividad de mayo y junio actualizada.
-
-## Subir a Claude Design
-
-1. Abre Claude Design.
-2. Importa / sube el archivo `index.html`.
-3. Itéralo por chat si quieres ajustar colores, textos o secciones.
-
-## Desplegar en Vercel
-
-### Opción A — Arrastrar y soltar (lo más rápido)
-1. Entra a https://vercel.com/new
-2. Arrastra la carpeta que contiene `index.html` y `vercel.json`.
-3. Deploy. Vercel sirve `index.html` en la raíz automáticamente.
-
-### Opción B — Desde tu repo `OswaldMkg/Dashboard`
-1. Reemplaza el `index.html` del repo con este nuevo archivo (y agrega `vercel.json`).
-2. Haz commit y push a `main`.
-3. Vercel redepliega solo y se actualiza `dashboardmocha.vercel.app`.
-
-```bash
-# desde la carpeta del repo
-cp index.html vercel.json /ruta/a/tu/repo/Dashboard/
-cd /ruta/a/tu/repo/Dashboard/
-git add index.html vercel.json
-git commit -m "Dashboard junio 2026: KPIs de junio, élite, recta final, gráficas de leads y cierres"
-git push origin main
+```
+data/                  ← Archivos Excel fuente (se reemplazan cada mes)
+scripts/build-data.mjs ← Pipeline: lee, valida, normaliza, deduplica y agrega
+src/generated/         ← dashboard.json + validation.json (se regeneran en cada build)
+src/config.ts          ← Metas ajustables (asesor $360,000 · cohorte)
+src/views/             ← 8 secciones (Resumen, Asesores, Operaciones, …)
+src/components/        ← UI y gráficos reutilizables (Recharts + Lucide)
 ```
 
-## Cómo actualizar los datos a futuro
+- **Stack:** Vite + React 18 + TypeScript (modo estricto), Recharts, Lucide.
+- **Automatización:** `npm run build` ejecuta el pipeline de datos antes de compilar.
+  En Vercel, cada `git push` regenera todo; el mes actual se detecta solo.
 
-Los datos viven dentro de `index.html` en la constante `DATA` (asesores), y en `LEADS`, `SALES` y `JK` (gráficas y banda de junio). Se pueden editar a mano o regenerar desde los Excel de origen (`OPCIONES_RENTA_VENTA` y `_REMAX_TERRA_APARTADO_Y_CIERRE`).
+## Reglas de datos
 
-> Nota sobre cierres: el filtro usa el campo **FECHA OPERACION**. Las fechas 2025 quedan fuera. Las fechas 2026 vienen en texto ("10 de Junio de 2026") y se interpretan por el año.
+- Solo se contabiliza el año **2026**. Excepción: operaciones apartadas en meses o
+  años anteriores pero **cerradas en 2026** cuentan en su mes real de cierre
+  (columna FECHA OPERACION; si falta, FECHA DE FIRMA; si falta, fecha de apartado).
+- **Meta del cohorte:** solo columna Y (Comisión Asesor). **Meta individual
+  ($360,000):** columnas X + Y (Comisión Oficina + Comisión Asesor).
+- Cierres con PAGADO ≠ "SI" se muestran como pago pendiente, sin duplicar montos.
+- Estatus ABIERTA = operación pendiente; SE CAYÓ se excluye de totales.
+- Nombres de asesor normalizados entre archivos (p. ej. "Gisella García" →
+  "Nidia Gisela García Trujillo"); registros duplicados se eliminan y se reportan
+  en la sección **Configuración**.
+
+## Actualización mensual
+
+1. Reemplaza los `.xlsx` de `data/` (uno con "OPCIONES" en el nombre y otro con "APARTADO").
+2. `git add . && git commit -m "Datos <mes>" && git push`
+3. Vercel compila y publica automáticamente. Sin cambios de código.
+
+Local: `npm install` una vez; `npm run dev` para desarrollo; `npm run build` para producción.
