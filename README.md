@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/30280912/README.md)
 # RE/MAX Terra · Dashboard Ejecutivo 2026
 
 Dashboard de desempeño comercial reconstruido desde cero. Lee directamente los
