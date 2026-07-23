@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { DashboardData } from "../types";
-import { META_COHORTE, MESES_CORTOS, MESES_LARGOS } from "../config";
+import { MESES_CORTOS, MESES_LARGOS } from "../config";
 import {
   acumulado,
   conversion,
@@ -38,7 +38,8 @@ export function Resumen({ data }: { data: DashboardData }) {
   const mesIdx = cm - 1;
   const prevIdx = pm ? pm - 1 : null;
 
-  const cohortePct = safeDiv(t.comAsesor, META_COHORTE) * 100;
+  const c = data.cohorte;
+  const cohortePct = c.avancePct;
   const crecimiento = mayorCrecimiento(data);
   const produccion = mayorProduccion(data);
 
@@ -135,23 +136,24 @@ export function Resumen({ data }: { data: DashboardData }) {
 
       {/* Cohorte */}
       <div className="section">
-        <Card title="Cumplimiento del Cohorte · Comisión Asesor (columna Y)" icon={<Target size={14} />} className="highlight-card">
+        <Card title="Cumplimiento del Cohorte · meta por antigüedad (columna Y)" icon={<Target size={14} />} className="highlight-card">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 28, alignItems: "center", marginBottom: 14 }}>
             <div>
-              <div className="kpi-value num" style={{ fontSize: 28 }}>{fMoney(t.comAsesor)}</div>
-              <div className="kpi-sub">Comisión acumulada {data.year}</div>
+              <div className="kpi-value num" style={{ fontSize: 28 }}>{fMoney(c.realAcumulado)}</div>
+              <div className="kpi-sub">Llevan realmente (columna Y)</div>
             </div>
             <div>
-              <div className="kpi-value num" style={{ fontSize: 20, color: "var(--text-2)" }}>{fMoney(META_COHORTE)}</div>
-              <div className="kpi-sub">Meta del cohorte</div>
+              <div className="kpi-value num" style={{ fontSize: 20, color: "var(--text-2)" }}>{fMoney(c.esperadoAcumulado)}</div>
+              <div className="kpi-sub">Deberían llevar a la fecha</div>
             </div>
             <div>
-              <div className="kpi-value num" style={{ fontSize: 20, color: "var(--text-2)" }}>{fMoney(Math.max(META_COHORTE - t.comAsesor, 0))}</div>
-              <div className="kpi-sub">Faltante</div>
+              <div className="kpi-value num" style={{ fontSize: 20, color: c.diferencia >= 0 ? "var(--ok)" : "var(--bad)" }}>{fMoney(c.diferencia)}</div>
+              <div className="kpi-sub">Diferencia</div>
             </div>
             <SemaforoBadge pct={cohortePct} />
           </div>
           <Progress pct={cohortePct} nivel={nivelSemaforo(cohortePct)} />
+          <div className="kpi-sub" style={{ marginTop: 8 }}>Meta mensual del cohorte: {fMoney(c.metaMensual)} · escalonada por antigüedad</div>
         </Card>
       </div>
 

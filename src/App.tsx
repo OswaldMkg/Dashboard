@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import dashboardJson from "./generated/dashboard.json";
 import type { DashboardData, SectionId } from "./types";
-import { META_COHORTE, MESES_LARGOS, NOMBRE_OFICINA } from "./config";
-import { fPct, safeDiv } from "./lib/metrics";
+import { MESES_LARGOS, NOMBRE_OFICINA } from "./config";
+import { fPct } from "./lib/metrics";
 import { Resumen } from "./views/Resumen";
 import { Asesores } from "./views/Asesores";
 import { Operaciones } from "./views/Operaciones";
@@ -61,7 +61,7 @@ export default function App() {
     window.location.hash = param ? `/${id}/${encodeURIComponent(param)}` : `/${id}`;
   };
 
-  const cohortePct = useMemo(() => safeDiv(data.totals.comAsesor, META_COHORTE) * 100, []);
+  const cohortePct = data.cohorte.avancePct;
 
   const view = useMemo(() => {
     switch (route.section) {

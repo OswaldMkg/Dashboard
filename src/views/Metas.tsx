@@ -1,69 +1,93 @@
-import { Target, Users } from "lucide-react";
+import { Target, TrendingDown, TrendingUp, Users } from "lucide-react";
 import type { DashboardData } from "../types";
-import { META_COHORTE } from "../config";
-import { fMoney, nivelSemaforo, safeDiv } from "../lib/metrics";
-import { Avatar, Card, MonthChip, PageHead, Progress, SemaforoBadge } from "../components/ui";
+import { META_ANUAL_ASESOR, MESES_LARGOS } from "../config";
+import { fMoney, fPct, nivelSemaforo, safeDiv } from "../lib/metrics";
+import { Avatar, Card, Kpi, MonthChip, PageHead, Progress, SemaforoBadge } from "../components/ui";
 
 export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: string) => void }) {
-  const cohortePct = safeDiv(data.totals.comAsesor, META_COHORTE) * 100;
+  const c = data.cohorte;
 
+  // Meta anual individual ($360,000 sobre X+Y)
   const lista = data.advisors
-    .filter((a) => a.activo && a.metaIndividual != null && a.metaIndividual > 0)
-    .map((a) => ({ a, pct: safeDiv(a.totales.comTotal, a.metaIndividual!) * 100 }))
-    .sort((x, y) => y.pct - x.pct);
-  const sinMeta = data.advisors.filter((a) => a.activo && !(a.metaIndividual != null && a.metaIndividual > 0));
+    .filter((a) => a.activo)
+    .map((a) => ({
+      a,
+      pctAnual: safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100,
+      tieneAntig: a.metaAntiguedad != null && a.metaAntiguedad > 0,
+      pctAntig: a.metaAntiguedad ? safeDiv(a.totales.comAsesor, a.metaAntiguedad) * 100 : null,
+    }))
+    .sort((x, y) => y.pctAnual - x.pctAnual);
 
-  const enMeta = lista.filter((x) => x.pct >= 75).length;
-  const enRiesgo = lista.filter((x) => x.pct >= 50 && x.pct < 75).length;
-  const criticos = lista.filter((x) => x.pct < 50).length;
+  const enMeta = lista.filter((x) => x.pctAnual >= 75).length;
+  const enRiesgo = lista.filter((x) => x.pctAnual >= 50 && x.pctAnual < 75).length;
+  const criticos = lista.filter((x) => x.pctAnual < 50).length;
+  const alDia = c.realAcumulado >= c.esperadoAcumulado;
 
   return (
     <>
       <PageHead
         title="Metas"
-        subtitle="Meta individual escalonada por antigüedad (Comisión Oficina + Comisión Asesor)"
+        subtitle={`Dos metas: cohorte por antigüedad (columna Y) y meta anual individual de ${fMoney(META_ANUAL_ASESOR)} (X + Y)`}
         tools={<MonthChip current={data.currentMonth} previous={data.previousMonth} year={data.year} />}
       />
 
+      {/* ---- Desglose del cohorte ---- */}
+      <div className="grid kpi-grid section">
+        <Kpi label="Meta mensual del cohorte" value={fMoney(c.metaMensual)} icon={<Target size={16} />} sub={<span>Suma de aportes de {MESES_LARGOS[data.currentMonth - 1]}</span>} />
+        <Kpi label="Deberían llevar acumulado" value={fMoney(c.esperadoAcumulado)} icon={<Target size={16} />} sub={<span>Según antigüedad, a la fecha</span>} />
+        <Kpi label="Llevan realmente (Y)" value={fMoney(c.realAcumulado)} icon={<Users size={16} />} sub={<span>Comisión asesor cerrada</span>} />
+        <Kpi
+          label="Diferencia"
+          value={fMoney(c.diferencia)}
+          icon={alDia ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+          sub={<span style={{ color: alDia ? "var(--ok)" : "var(--bad)" }}>{alDia ? "Por encima de lo esperado" : "Por debajo de lo esperado"}</span>}
+        />
+      </div>
+
       <div className="section">
-        <Card title="Cumplimiento del Cohorte · columna Y (Comisión Asesor)" icon={<Target size={14} />} className="highlight-card">
+        <Card title="Cumplimiento del cohorte · meta escalonada por antigüedad (columna Y)" icon={<Target size={14} />} className="highlight-card">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 28, alignItems: "center", marginBottom: 14 }}>
             <div>
-              <div className="kpi-value num" style={{ fontSize: 26 }}>{fMoney(data.totals.comAsesor)}</div>
-              <div className="kpi-sub">Acumulado {data.year}</div>
+              <div className="kpi-value num" style={{ fontSize: 26 }}>{fMoney(c.realAcumulado)}</div>
+              <div className="kpi-sub">Comisión asesor acumulada (Y)</div>
             </div>
             <div>
-              <div className="kpi-value num" style={{ fontSize: 19, color: "var(--text-2)" }}>{fMoney(META_COHORTE)}</div>
-              <div className="kpi-sub">Meta anual del cohorte</div>
+              <div className="kpi-value num" style={{ fontSize: 19, color: "var(--text-2)" }}>{fMoney(c.esperadoAcumulado)}</div>
+              <div className="kpi-sub">Meta esperada a la fecha</div>
             </div>
-            <SemaforoBadge pct={cohortePct} />
+            <SemaforoBadge pct={c.avancePct} />
             <div style={{ display: "flex", gap: 8, marginLeft: "auto", flexWrap: "wrap" }}>
-              <span className="badge ok"><span className="dot ok" /> {enMeta} en meta</span>
+              <span className="badge ok"><span className="dot ok" /> {enMeta} en meta anual</span>
               <span className="badge warn"><span className="dot warn" /> {enRiesgo} en riesgo</span>
               <span className="badge bad"><span className="dot bad" /> {criticos} críticos</span>
             </div>
           </div>
-          <Progress pct={cohortePct} nivel={nivelSemaforo(cohortePct)} />
+          <Progress pct={c.avancePct} nivel={nivelSemaforo(c.avancePct)} />
+          <div className="kpi-sub" style={{ marginTop: 8 }}>
+            Avance {fPct(c.avancePct)} de lo que el cohorte debería llevar acumulado a {MESES_LARGOS[data.currentMonth - 1].toLowerCase()}. {c.asesoresConMeta} asesores con meta activa (fuera de capacitación).
+          </div>
         </Card>
       </div>
 
+      {/* ---- Tabla individual: dos metas ---- */}
       <div className="section">
-        <Card title="Avance individual hacia la meta anual" icon={<Users size={14} />}>
+        <Card title="Avance individual · meta anual (X + Y) y aporte al cohorte (Y)" icon={<Users size={14} />}>
           <div className="table-wrap">
             <table className="data">
               <thead>
                 <tr>
                   <th>Asesor</th>
-                  <th className="r">Antigüedad</th>
-                  <th className="r">Meta al mes</th>
-                  <th className="r">Acumulado (X + Y)</th>
-                  <th className="r">Restante</th>
-                  <th style={{ width: "22%" }}>Avance</th>
-                  <th>Semáforo</th>
+                  <th className="r">Antig.</th>
+                  <th className="r">Meta anual (X+Y)</th>
+                  <th className="r">Logrado (X+Y)</th>
+                  <th style={{ width: "18%" }}>Avance anual</th>
+                  <th className="r">Debería (Y)</th>
+                  <th className="r">Lleva (Y)</th>
+                  <th>Cohorte</th>
                 </tr>
               </thead>
               <tbody>
-                {lista.map(({ a, pct }) => (
+                {lista.map(({ a, pctAnual, tieneAntig, pctAntig }) => (
                   <tr key={a.nombre} className="clickable" onClick={() => onSelect(a.nombre)}>
                     <td>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
@@ -72,26 +96,26 @@ export function Metas({ data, onSelect }: { data: DashboardData; onSelect: (n: s
                       </span>
                     </td>
                     <td className="r num">{a.mesesAntiguedad} m</td>
-                    <td className="r num">{fMoney(a.metaIndividual!)}</td>
+                    <td className="r num">{fMoney(META_ANUAL_ASESOR)}</td>
                     <td className="r num">{fMoney(a.totales.comTotal)}</td>
-                    <td className="r num">{fMoney(Math.max(a.metaIndividual! - a.totales.comTotal, 0))}</td>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ flex: 1 }}><Progress pct={pct} /></div>
-                        <span className="num" style={{ fontSize: 12, fontWeight: 600, minWidth: 44, textAlign: "right" }}>{pct.toFixed(1)}%</span>
+                        <div style={{ flex: 1 }}><Progress pct={pctAnual} /></div>
+                        <span className="num" style={{ fontSize: 12, fontWeight: 600, minWidth: 42, textAlign: "right" }}>{pctAnual.toFixed(0)}%</span>
                       </div>
                     </td>
-                    <td><SemaforoBadge pct={pct} /></td>
+                    <td className="r num">{tieneAntig ? fMoney(a.metaAntiguedad!) : "—"}</td>
+                    <td className="r num">{fMoney(a.totales.comAsesor)}</td>
+                    <td>
+                      {tieneAntig
+                        ? <SemaforoBadge pct={pctAntig!} />
+                        : <span className="badge neutral">{a.fechaSir ? "En capacitación" : "Sin fecha"}</span>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          {sinMeta.length > 0 && (
-            <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 12 }}>
-              {sinMeta.length} asesor{sinMeta.length > 1 ? "es" : ""} sin meta calculada (en capacitación o sin fecha de ingreso registrada): {sinMeta.map((a) => a.nombre).join(", ")}.
-            </p>
-          )}
         </Card>
       </div>
     </>

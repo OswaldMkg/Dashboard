@@ -1,7 +1,7 @@
 import { AlertTriangle, CalendarClock, Database, FileSpreadsheet, GitMerge, RefreshCw, Target, Users } from "lucide-react";
 import validationJson from "../generated/validation.json";
 import type { DashboardData, ValidationReport } from "../types";
-import { META_COHORTE, MESES_CAPACITACION, MESES_LARGOS, TABLA_META_ANTIGUEDAD } from "../config";
+import { META_ANUAL_ASESOR, MESES_CAPACITACION, MESES_LARGOS, TABLA_META_ANTIGUEDAD } from "../config";
 import { fMoney } from "../lib/metrics";
 import { Card, PageHead } from "../components/ui";
 
@@ -28,12 +28,12 @@ export function Configuracion({ data }: { data: DashboardData }) {
           <div className="pair-row"><span className="k">Mes detectado automáticamente</span><span className="v">{MESES_LARGOS[data.currentMonth - 1]} {data.year}</span></div>
         </Card>
         <Card title="Metas configuradas" icon={<Database size={14} />}>
-          <div className="pair-row"><span className="k">Meta del cohorte (solo columna Y)</span><span className="v num">{fMoney(META_COHORTE)}</span></div>
-          <div className="pair-row"><span className="k">Meta individual (X + Y)</span><span className="v">Escalonada por antigüedad</span></div>
+          <div className="pair-row"><span className="k">Meta del cohorte (columna Y)</span><span className="v">Escalonada por antigüedad (suma)</span></div>
+          <div className="pair-row"><span className="k">Meta anual individual (X + Y)</span><span className="v num">{fMoney(META_ANUAL_ASESOR)}</span></div>
           <div className="pair-row"><span className="k">Capacitación inicial descontada</span><span className="v num">{MESES_CAPACITACION} meses</span></div>
           <div className="pair-row"><span className="k">Semáforo</span><span className="v">Rojo &lt;50% · Ámbar 50–74% · Verde ≥75%</span></div>
           <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "10px 0 0" }}>
-            La meta del cohorte no existe en los archivos fuente; se ajusta en <code>src/config.ts</code>.
+            La meta anual individual y las tarifas por antigüedad se ajustan en <code>src/config.ts</code>. El cohorte se calcula sumando el aporte esperado de cada asesor según su antigüedad.
           </p>
         </Card>
       </div>

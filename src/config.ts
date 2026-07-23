@@ -4,11 +4,15 @@
  * el resto se calcula automáticamente desde los archivos Excel.
  */
 
+/** Meta anual individual por asesor, año calendario (1 ene – 31 dic).
+ *  Se mide contra la comisión total del asesor (Oficina + Asesor, X + Y). */
+export const META_ANUAL_ASESOR = 360_000;
+
 /**
- * Meta individual por antigüedad. Se calcula en el pipeline (build-data.mjs)
+ * Meta del COHORTE por antigüedad. Se calcula en el pipeline (build-data.mjs)
  * a partir de la "Fecha Sir" del archivo de membresías, restando los meses de
  * capacitación inicial y acumulando la tarifa de cada mes activo por tramo.
- * La meta se compara contra la comisión total del asesor (Oficina + Asesor, X + Y).
+ * El cohorte se mide contra la columna Y (Comisión Asesor).
  * Esta tabla es solo de referencia para la sección Configuración; el cálculo real
  * vive en el pipeline. Si cambias las tarifas, actualiza AMBOS lugares.
  */
@@ -22,13 +26,6 @@ export const TABLA_META_ANTIGUEDAD = [
   { rango: "19+ meses", monto: 20_000 },
 ] as const;
 
-/**
- * Meta anual del cohorte. Se compara contra la suma de la columna Y
- * (COMISIÓN ASESOR) de todas las operaciones cerradas del año.
- * AJUSTABLE: este valor no existe en los archivos fuente; modifícalo aquí
- * cuando la dirección defina la meta oficial.
- */
-export const META_COHORTE = 3_000_000;
 
 /** Umbrales del semáforo (% de avance): rojo < 50, ámbar 50–74, verde ≥ 75. */
 export const SEMAFORO = { AMBAR: 50, VERDE: 75 } as const;

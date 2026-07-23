@@ -5,13 +5,14 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  Inbox,
   Route,
   Search,
   Target,
   TrendingUp,
 } from "lucide-react";
 import type { Advisor, DashboardData } from "../types";
-import { MESES_CORTOS, MESES_LARGOS } from "../config";
+import { META_ANUAL_ASESOR, MESES_CORTOS, MESES_LARGOS } from "../config";
 import { fMoney, fNum, nivelSemaforo, rankOf, safeDiv } from "../lib/metrics";
 import { Avatar, Card, Delta, MonthChip, PageHead, Progress, SemaforoBadge } from "../components/ui";
 import { BarrasMensuales } from "../components/charts";
@@ -59,7 +60,7 @@ function AsesoresGrid({ data, onSelect }: { data: DashboardData; onSelect: (n: s
       />
       <div className="grid adv-grid">
         {list.map((a) => {
-          const metaPct = a.metaIndividual ? safeDiv(a.totales.comTotal, a.metaIndividual) * 100 : null;
+          const metaPct = safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100;
           return (
             <div className="card adv-card" key={a.nombre} onClick={() => onSelect(a.nombre)} role="button" tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && onSelect(a.nombre)}>
@@ -79,10 +80,10 @@ function AsesoresGrid({ data, onSelect }: { data: DashboardData; onSelect: (n: s
               </div>
               <div style={{ marginTop: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--text-3)", marginBottom: 5 }}>
-                  <span>Meta por antigüedad{a.metaIndividual ? ` · ${fMoney(a.metaIndividual)}` : ""}</span>
-                  <span className="num">{metaPct === null ? "—" : `${Math.round(metaPct)}%`}</span>
+                  <span>Meta anual · {fMoney(META_ANUAL_ASESOR)}</span>
+                  <span className="num">{Math.round(metaPct)}%</span>
                 </div>
-                <Progress pct={metaPct ?? 0} />
+                <Progress pct={metaPct} />
               </div>
             </div>
           );
@@ -99,15 +100,19 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
   const ci = cm - 1;
   const pi = pm ? pm - 1 : null;
 
-  const tieneMeta = a.metaIndividual != null && a.metaIndividual > 0;
-  const metaPct = tieneMeta ? safeDiv(a.totales.comTotal, a.metaIndividual!) * 100 : 0;
-  const restante = tieneMeta ? Math.max(a.metaIndividual! - a.totales.comTotal, 0) : 0;
+  // Meta anual individual: $360,000 (X + Y), año calendario
+  const metaPct = safeDiv(a.totales.comTotal, META_ANUAL_ASESOR) * 100;
+  const restante = Math.max(META_ANUAL_ASESOR - a.totales.comTotal, 0);
+  // Meta del cohorte por antigüedad (columna Y)
+  const tieneAntig = a.metaAntiguedad != null && a.metaAntiguedad > 0;
+  const antigPct = tieneAntig ? safeDiv(a.totales.comAsesor, a.metaAntiguedad!) * 100 : 0;
 
   const parMes = (serie: number[]) => ({
     actual: serie[ci],
     anterior: pi !== null ? serie[pi] : 0,
   });
 
+  const led = parMes(a.actividad.leads);
   const rec = parMes(a.actividad.recorridos);
   const opc = parMes(a.actividad.opciones);
   const opd = parMes(a.actividad.opcionadas);
@@ -128,21 +133,34 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
 
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
         <Avatar nombre={a.nombre} lg />
-        {tieneMeta && <SemaforoBadge pct={metaPct} />}
+        <SemaforoBadge pct={metaPct} />
         {a.totales.pendientes > 0 && (
           <span className="badge info"><Clock size={13} /> {a.totales.pendientes} operación{a.totales.pendientes > 1 ? "es" : ""} pendiente{a.totales.pendientes > 1 ? "s" : ""}</span>
         )}
       </div>
 
       <div className="detail-grid section">
+        <Card title="Leads recibidos" icon={<Inbox size={14} />}>
+          <MesVsMes actual={led.actual} anterior={led.anterior} cm={cm} pm={pm} />
+          <div className="pair-row" style={{ marginTop: 4 }}><span className="k">Total {data.year} (ene–{MESES_CORTOS[ci].toLowerCase()})</span><span className="v num">{fNum(a.totales.leads)}</span></div>
+        </Card>
         <Card title="Recorridos" icon={<Route size={14} />}>
           <MesVsMes actual={rec.actual} anterior={rec.anterior} cm={cm} pm={pm} />
+          <div className="pair-row" style={{ marginTop: 4 }}><span className="k">Total {data.year}</span><span className="v num">{fNum(a.totales.recorridos)}</span></div>
         </Card>
         <Card title="Opciones" icon={<Eye size={14} />}>
           <MesVsMes actual={opc.actual} anterior={opc.anterior} cm={cm} pm={pm} />
+          <div className="pair-row" style={{ marginTop: 4 }}><span className="k">Total {data.year}</span><span className="v num">{fNum(a.totales.opciones)}</span></div>
         </Card>
         <Card title="Propiedades Opcionadas" icon={<Building2 size={14} />}>
           <MesVsMes actual={opd.actual} anterior={opd.anterior} cm={cm} pm={pm} />
+          <div className="pair-row" style={{ marginTop: 4 }}><span className="k">Venta / Renta / Total</span><span className="v num">{fNum(a.totales.opcionadasVenta)} / {fNum(a.totales.opcionadasRenta)} / {fNum(a.totales.opcionadas)}</span></div>
+        </Card>
+      </div>
+
+      <div className="section">
+        <Card title="Leads recibidos por mes" icon={<Inbox size={14} />}>
+          <BarrasMensuales series={a.actividad.leads} hasta={cm} alto={170} />
         </Card>
       </div>
 
@@ -158,23 +176,41 @@ function AsesorDetalle({ data, advisor: a, onBack }: { data: DashboardData; advi
           <BarrasMensuales series={a.cierresMes} hasta={cm} alto={150} />
         </Card>
 
-        <Card title="Meta individual por antigüedad" icon={<Target size={14} />} className="highlight-card">
-          {tieneMeta ? (
-            <>
-              <div className="pair-row"><span className="k">Antigüedad (menos capacitación)</span><span className="v num">{a.mesesAntiguedad} {a.mesesAntiguedad === 1 ? "mes" : "meses"}</span></div>
-              <div className="pair-row"><span className="k">Meta acumulada al mes</span><span className="v num">{fMoney(a.metaIndividual!)}</span></div>
-              <div className="pair-row"><span className="k">Monto logrado (Oficina + Asesor)</span><span className="v num">{fMoney(a.totales.comTotal)}</span></div>
-              <div className="pair-row"><span className="k">Porcentaje de avance</span><span className="v num">{metaPct.toFixed(1)}%</span></div>
-              <div className="pair-row"><span className="k">Cantidad restante</span><span className="v num">{fMoney(restante)}</span></div>
-              <div style={{ marginTop: 14, marginBottom: 8 }}>
-                <Progress pct={metaPct} nivel={nivelSemaforo(metaPct)} />
+        <Card title={`Meta anual individual · ${fMoney(META_ANUAL_ASESOR)}`} icon={<Target size={14} />} className="highlight-card">
+          <div className="pair-row"><span className="k">Año calendario</span><span className="v">1 ene – 31 dic {data.year}</span></div>
+          <div className="pair-row"><span className="k">Monto logrado (Oficina + Asesor)</span><span className="v num">{fMoney(a.totales.comTotal)}</span></div>
+          <div className="pair-row"><span className="k">Comisión Oficina (X)</span><span className="v num">{fMoney(a.totales.comOficina)}</span></div>
+          <div className="pair-row"><span className="k">Comisión Asesor (Y)</span><span className="v num">{fMoney(a.totales.comAsesor)}</span></div>
+          <div className="pair-row"><span className="k">Porcentaje de avance</span><span className="v num">{metaPct.toFixed(1)}%</span></div>
+          <div className="pair-row"><span className="k">Cantidad restante</span><span className="v num">{fMoney(restante)}</span></div>
+          <div style={{ marginTop: 14, marginBottom: 8 }}>
+            <Progress pct={metaPct} nivel={nivelSemaforo(metaPct)} />
+          </div>
+          <SemaforoBadge pct={metaPct} />
+        </Card>
+      </div>
+
+      <div className="section">
+        <Card title="Aporte al cohorte · meta por antigüedad (columna Y)" icon={<Target size={14} />}>
+          {tieneAntig ? (
+            <div className="detail-grid" style={{ marginTop: 0 }}>
+              <div>
+                <div className="pair-row"><span className="k">Antigüedad (menos {2} meses de capacitación)</span><span className="v num">{a.mesesAntiguedad} {a.mesesAntiguedad === 1 ? "mes" : "meses"}</span></div>
+                <div className="pair-row"><span className="k">Aporte mensual actual</span><span className="v num">{fMoney(a.tarifaMesActual)}</span></div>
+                <div className="pair-row"><span className="k">Debería llevar acumulado (Y)</span><span className="v num">{fMoney(a.metaAntiguedad!)}</span></div>
+                <div className="pair-row"><span className="k">Lleva realmente (Y)</span><span className="v num">{fMoney(a.totales.comAsesor)}</span></div>
+                <div className="pair-row"><span className="k">Diferencia</span><span className="v num" style={{ color: a.totales.comAsesor >= a.metaAntiguedad! ? "var(--ok)" : "var(--bad)" }}>{fMoney(a.totales.comAsesor - a.metaAntiguedad!)}</span></div>
               </div>
-              <SemaforoBadge pct={metaPct} />
-            </>
-          ) : a.metaIndividual === 0 ? (
-            <div className="empty">En periodo de capacitación inicial ({a.fechaSir ? `ingresó ${a.fechaSir}` : "sin fecha"}). La meta comienza a acumularse al tercer mes.</div>
+              <div>
+                <div className="kpi-sub" style={{ marginBottom: 6 }}>Avance sobre lo esperado</div>
+                <div style={{ marginBottom: 8 }}><Progress pct={antigPct} nivel={nivelSemaforo(antigPct)} /></div>
+                <SemaforoBadge pct={antigPct} />
+              </div>
+            </div>
+          ) : a.fechaSir ? (
+            <div className="empty">En periodo de capacitación inicial (ingresó {a.fechaSir}). El aporte al cohorte comienza al tercer mes.</div>
           ) : (
-            <div className="empty">Sin fecha de ingreso registrada en el archivo de membresías. No es posible calcular la meta por antigüedad.</div>
+            <div className="empty">Sin fecha de ingreso registrada en el archivo de membresías. No es posible calcular su meta por antigüedad.</div>
           )}
         </Card>
       </div>

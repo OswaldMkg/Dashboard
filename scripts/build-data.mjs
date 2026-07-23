@@ -260,6 +260,18 @@ if (MEMBRESIAS_PATH) {
   };
   [...rosterSet.values()].forEach(asignar);
   Object.values(ALIAS).forEach((v) => { if (!fechaSirPorAsesor.has(strip(v))) asignar(v); });
+
+  // Correcciones manuales de Fecha Sir (errores de captura en el archivo de membresías)
+  const CORRECCIONES_FECHA_SIR = [
+    { nombre: "Christian Díaz Padilla", y: 2025, m: 3, motivo: "el archivo indica 2024; ingreso real 2025" },
+  ];
+  for (const c of CORRECCIONES_FECHA_SIR) {
+    const key = strip(c.nombre);
+    if (fechaSirPorAsesor.has(key)) {
+      fechaSirPorAsesor.set(key, { y: c.y, m: c.m });
+      validation.fechasCorregidas.push(`Fecha Sir de ${c.nombre}: corregida a ${c.y}-${String(c.m).padStart(2, "0")} (${c.motivo})`);
+    }
+  }
 } else {
   validation.advertencias.push("No se encontró el archivo de membresías en /data — las metas individuales por antigüedad no se calcularon");
 }
@@ -275,6 +287,7 @@ const previousMonth = currentMonth > 1 ? currentMonth - 1 : null;
 /* ------------------------------------------------------------------ */
 /* 4) Agregación por asesor                                            */
 /* ------------------------------------------------------------------ */
+const META_ANIO = 360000; // meta individual anual (X+Y), 1 ene – 31 dic
 const advisorNames = new Set([...rosterSet.values()]);
 ops.forEach((o) => { if (o.asesor) advisorNames.add(o.asesor); });
 
@@ -304,14 +317,16 @@ const advisors = [...advisorNames].sort((a, b) => strip(a).localeCompare(strip(b
   const comAsesor = comAsesorMes.reduce((a, b) => a + b, 0);
   const enRoster = rosterSet.has(strip(name)) || Object.values(ALIAS).some((v) => strip(v) === strip(name));
 
-  // Antigüedad y meta individual escalonada
+  // Antigüedad → meta escalonada esperada (aporte al cohorte, se mide contra columna Y)
   const fSir = fechaSirPorAsesor.get(strip(name)) ?? null;
   let mesesAntiguedad = 0;
-  let metaIndividual = null;
+  let metaAntiguedad = null; // lo que ESTE asesor debería llevar acumulado (columna Y)
+  let tarifaMesActual = 0;   // su aporte mensual del mes en curso
   if (fSir) {
     const bruto = (YEAR - fSir.y) * 12 + (currentMonth - fSir.m);
     mesesAntiguedad = Math.max(0, bruto - MESES_CAPACITACION);
-    metaIndividual = metaAcumulada(mesesAntiguedad);
+    metaAntiguedad = metaAcumulada(mesesAntiguedad);
+    tarifaMesActual = mesesAntiguedad > 0 ? tarifaMes(mesesAntiguedad) : 0;
   }
   const enMesActual = !!actividad[currentMonth]?.[name];
   const con2026 = cierres2026.length + apartados2026.length + pendientes.length + act.recorridos.reduce((a, b) => a + b, 0) + act.opciones.reduce((a, b) => a + b, 0) + act.opcionadas.reduce((a, b) => a + b, 0) > 0;
@@ -322,7 +337,9 @@ const advisors = [...advisorNames].sort((a, b) => strip(a).localeCompare(strip(b
     activo: enMesActual || con2026,
     fechaSir: fSir ? `${fSir.y}-${String(fSir.m).padStart(2, "0")}` : null,
     mesesAntiguedad,
-    metaIndividual,
+    metaAntiguedad,        // esperado acumulado en columna Y según antigüedad
+    tarifaMesActual,       // aporte mensual del mes en curso
+    metaAnio: META_ANIO,   // meta individual $360,000 (X+Y), año calendario
     actividad: act,
     cierresMes, apartadosMes, comOficinaMes, comAsesorMes,
     totales: {
@@ -382,8 +399,19 @@ const excluidos = advisors.filter((a) => !a.enRoster && !a.activo);
 excluidos.forEach((a) => validation.advertencias.push(`Asesor externo "${a.nombre}" sin actividad ${YEAR} (solo operaciones de años anteriores) — excluido del dashboard`));
 const advisorsFinal = advisors.filter((a) => !excluidos.includes(a));
 
+// Desglose del cohorte (meta escalonada por antigüedad, medida vs columna Y)
+const cohorte = {
+  metaMensual: advisors.reduce((a, x) => a + (x.tarifaMesActual || 0), 0), // lo que el grupo debe generar este mes
+  esperadoAcumulado: advisors.reduce((a, x) => a + (x.metaAntiguedad || 0), 0), // lo que deberían llevar a la fecha
+  realAcumulado: advisors.reduce((a, x) => a + x.totales.comAsesor, 0), // lo que llevan (columna Y)
+  asesoresConMeta: advisors.filter((x) => x.metaAntiguedad != null && x.metaAntiguedad > 0).length,
+};
+cohorte.diferencia = cohorte.realAcumulado - cohorte.esperadoAcumulado;
+cohorte.avancePct = cohorte.esperadoAcumulado > 0 ? (cohorte.realAcumulado / cohorte.esperadoAcumulado) * 100 : 0;
+
 const dashboard = {
   year: YEAR,
+  cohorte,
   currentMonth, previousMonth,
   mesesDisponibles: [...mesesConDatos].sort((a, b) => a - b),
   generadoEl: new Date().toISOString(),

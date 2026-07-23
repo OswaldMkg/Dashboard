@@ -44,7 +44,9 @@ export interface Advisor {
   activo: boolean;
   fechaSir: string | null;
   mesesAntiguedad: number;
-  metaIndividual: number | null;
+  metaAntiguedad: number | null;
+  tarifaMesActual: number;
+  metaAnio: number;
   actividad: {
     recorridos: number[];
     opciones: number[];
@@ -62,8 +64,18 @@ export interface Advisor {
   cierresDetalle: CierreDetalle[];
 }
 
+export interface Cohorte {
+  metaMensual: number;
+  esperadoAcumulado: number;
+  realAcumulado: number;
+  asesoresConMeta: number;
+  diferencia: number;
+  avancePct: number;
+}
+
 export interface DashboardData {
   year: number;
+  cohorte: Cohorte;
   currentMonth: number;
   previousMonth: number | null;
   mesesDisponibles: number[];
