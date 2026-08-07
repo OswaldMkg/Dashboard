@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  Award,
   Briefcase,
+  Flag,
   Home,
   Landmark,
   Menu,
@@ -22,10 +24,16 @@ import { Comisiones } from "./views/Comisiones";
 import { Metas } from "./views/Metas";
 import { Ranking } from "./views/Ranking";
 import { Configuracion } from "./views/Configuracion";
+import TopsJulio from "./components/TopsJulio";
+import Teams from "./components/Teams";
 
 const data = dashboardJson as DashboardData;
 
-const NAV: { id: SectionId; label: string; icon: typeof Home }[] = [
+// Las dos secciones nuevas no viven en dashboard.json, por eso se declaran aquí
+// en vez de tocar SectionId en types.ts.
+type NavId = SectionId | "tops" | "teams";
+
+const NAV: { id: NavId; label: string; icon: typeof Home }[] = [
   { id: "resumen", label: "Resumen Ejecutivo", icon: Home },
   { id: "asesores", label: "Asesores", icon: Users },
   { id: "operaciones", label: "Operaciones", icon: Briefcase },
@@ -33,14 +41,16 @@ const NAV: { id: SectionId; label: string; icon: typeof Home }[] = [
   { id: "comisiones", label: "Comisiones", icon: Landmark },
   { id: "metas", label: "Metas", icon: Target },
   { id: "ranking", label: "Ranking", icon: Trophy },
+  { id: "tops", label: "Tops del mes", icon: Award },
+  { id: "teams", label: "Teams", icon: Flag },
   { id: "configuracion", label: "Configuración", icon: Settings },
 ];
 
-function sectionFromHash(): { section: SectionId; param: string | null } {
+function sectionFromHash(): { section: NavId; param: string | null } {
   const raw = window.location.hash.replace(/^#\/?/, "");
   const [section, param] = raw.split("/");
   const valid = NAV.some((n) => n.id === section);
-  return { section: valid ? (section as SectionId) : "resumen", param: param ? decodeURIComponent(param) : null };
+  return { section: valid ? (section as NavId) : "resumen", param: param ? decodeURIComponent(param) : null };
 }
 
 export default function App() {
@@ -57,7 +67,7 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const go = (id: SectionId, param?: string) => {
+  const go = (id: NavId, param?: string) => {
     window.location.hash = param ? `/${id}/${encodeURIComponent(param)}` : `/${id}`;
   };
 
@@ -77,6 +87,10 @@ export default function App() {
         return <Metas data={data} onSelect={(n) => go("asesores", n)} />;
       case "ranking":
         return <Ranking data={data} onSelect={(n) => go("asesores", n)} />;
+      case "tops":
+        return <TopsJulio />;
+      case "teams":
+        return <Teams />;
       case "configuracion":
         return <Configuracion data={data} />;
       default:
