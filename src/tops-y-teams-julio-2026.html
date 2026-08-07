@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RE/MAX Terra · Tops de julio 2026 y Teams</title>
+<style>
+  body { margin: 0; background: #f6f8fb; padding: 24px clamp(12px, 4vw, 40px) 60px; }
+  .tt-tabs { display: flex; gap: 6px; margin-bottom: 22px; }
+  .tt-tab { font: inherit; font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 999px;
+    border: 1px solid #e6eaf0; background: #fff; color: #64748b; cursor: pointer; }
+  .tt-tab[aria-selected="true"] { background: #0e1a2b; border-color: #0e1a2b; color: #fff; }
+  .tt-tab:focus-visible { outline: 2px solid #003da5; outline-offset: 2px; }
+/* Estilos aislados para las secciones "Tops del mes" y "Teams".
+   Todo va con prefijo .tt- para no chocar con el resto del dashboard. */
+
+.tt-root {
+  --tt-ink: #0e1a2b;
+  --tt-muted: #64748b;
+  --tt-line: #e6eaf0;
+  --tt-surface: #ffffff;
+  --tt-canvas: #f6f8fb;
+  --tt-red: #e4002b;
+  --tt-blue: #003da5;
+  --tt-oro: #c8952a;
+  --tt-plata: #8e99a8;
+  --tt-bronce: #a96a38;
+  color: var(--tt-ink);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 0 32px;
+}
+
+/* ---------- encabezado ---------- */
+.tt-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tt-ink);
+  margin-bottom: 22px;
+}
+.tt-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tt-red);
+  margin: 0 0 6px;
+}
+.tt-title {
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.05;
+}
+.tt-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--tt-muted);
+  max-width: 62ch;
+}
+
+/* ---------- botón de captura ---------- */
+.tt-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tt-line);
+  background: var(--tt-surface);
+  color: var(--tt-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.tt-cap:hover { background: var(--tt-canvas); border-color: #cbd5e1; }
+.tt-cap:active { transform: translateY(1px); }
+.tt-cap:focus-visible { outline: 2px solid var(--tt-blue); outline-offset: 2px; }
+.tt-cap[disabled] { opacity: 0.55; cursor: progress; }
+.tt-cap--solid { background: var(--tt-ink); color: #fff; border-color: var(--tt-ink); }
+.tt-cap--solid:hover { background: #1c2c43; border-color: #1c2c43; }
+.tt-cap svg { width: 14px; height: 14px; }
+.tt-capturando .tt-cap { visibility: hidden; } /* no sale el botón en la foto */
+
+/* ---------- rejilla ---------- */
+.tt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* ---------- tarjeta ---------- */
+.tt-card {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-line);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tt-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tt-card__title { font-size: 15px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+.tt-card__note { font-size: 11.5px; color: var(--tt-muted); margin: 3px 0 0; line-height: 1.35; }
+
+/* ---------- filas del podio ---------- */
+.tt-rows { display: flex; flex-direction: column; gap: 6px; }
+.tt-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--tt-canvas);
+  overflow: hidden;
+}
+.tt-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(0, 61, 165, 0.09);
+  border-right: 1px solid rgba(0, 61, 165, 0.18);
+}
+.tt-row--1 .tt-row__bar { background: rgba(228, 0, 43, 0.1); border-right-color: rgba(228, 0, 43, 0.28); }
+.tt-row > * { position: relative; }
+.tt-place {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 800; color: #fff;
+  background: var(--tt-plata);
+}
+.tt-row--1 .tt-place { background: var(--tt-oro); }
+.tt-row--2 .tt-place { background: var(--tt-plata); }
+.tt-row--3 .tt-place { background: var(--tt-bronce); }
+.tt-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.tt-row--1 .tt-name { font-weight: 800; }
+.tt-meta { display: block; font-size: 11px; color: var(--tt-muted); font-weight: 500; }
+.tt-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.tt-val small { font-size: 11px; font-weight: 600; color: var(--tt-muted); margin-left: 5px; }
+.tt-tie { font-size: 10px; font-weight: 700; color: var(--tt-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---------- equipos ---------- */
+.tt-team { border-top: 4px solid var(--tt-team, var(--tt-blue)); }
+.tt-team__name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; margin: 0; }
+.tt-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tt-team); box-shadow: 0 0 0 3px var(--tt-team-soft); }
+.tt-badges { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; }
+.tt-badge {
+  font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 999px;
+  background: var(--tt-team-soft);
+  color: var(--tt-team-ink);
+  border: 1px solid var(--tt-team-line);
+}
+.tt-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tt-tbl th, .tt-tbl td { padding: 6px 3px; text-align: right; }
+.tt-tbl th:first-child, .tt-tbl td:first-child { text-align: left; }
+.tt-tbl thead th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--tt-muted); font-weight: 700; border-bottom: 1px solid var(--tt-line);
+  white-space: nowrap;
+}
+.tt-tbl tbody tr + tr td { border-top: 1px solid #f1f4f8; }
+.tt-tbl td:first-child { font-weight: 600; }
+.tt-tbl tfoot td {
+  border-top: 2px solid var(--tt-ink);
+  font-weight: 800; padding-top: 8px;
+}
+.tt-zero { color: #b6bfcc; }
+.tt-nodata { font-size: 10px; color: var(--tt-muted); font-weight: 600; }
+
+/* ---------- banner de arranque ---------- */
+.tt-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #fff8e6;
+  border: 1px solid #f2dda3;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #6b4e12;
+  margin-bottom: 16px;
+}
+.tt-banner strong { color: #4a350a; }
+
+/* ---------- pie / aviso ---------- */
+.tt-foot { margin-top: 18px; font-size: 11.5px; color: var(--tt-muted); line-height: 1.5; }
+.tt-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  background: var(--tt-ink); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 10px 16px; border-radius: 999px; z-index: 60;
+  box-shadow: 0 8px 24px rgba(14, 26, 43, 0.25);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tt-toast { animation: tt-in 0.18s ease-out; }
+  @keyframes tt-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+}
+
+</style>
+</head>
+<body>
+<div class="tt-tabs" role="tablist">
+  <button class="tt-tab" role="tab" aria-selected="true" data-panel="tops">Tops del mes</button>
+  <button class="tt-tab" role="tab" aria-selected="false" data-panel="teams">Teams</button>
+</div>
+<div id="tops"></div>
+<div id="teams" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const D = {
+  "periodo": "Julio 2026",
+  "actualizado": "2026-07-30",
+  "teamsNota": "Arranque de medición: los equipos empiezan a contar desde ahora. Los números se llenan con el corte de agosto 2026.",
+  "tops": {
+    "recorridos": {
+      "titulo": "Más recorridos",
+      "unidad": "recorridos",
+      "nota": "Recorridos registrados en julio 2026",
+      "items": [
+        {
+          "nombre": "Christian Alvarado",
+          "valor": 25.0,
+          "lugar": 1
+        },
+        {
+          "nombre": "Christian Díaz",
+          "valor": 21.0,
+          "lugar": 2
+        },
+        {
+          "nombre": "Mariana Vega",
+          "valor": 21.0,
+          "lugar": 2
+        }
+      ]
+    },
+    "mostradas": {
+      "titulo": "Más opciones mostradas",
+      "unidad": "opciones",
+      "nota": "Opciones mostradas a clientes en julio 2026",
+      "items": [
+        {
+          "nombre": "Christian Díaz",
+          "valor": 45.0,
+          "lugar": 1
+        },
+        {
+          "nombre": "Mariana Vega",
+          "valor": 42.0,
+          "lugar": 2
+        },
+        {
+          "nombre": "Christian Alvarado",
+          "valor": 41.0,
+          "lugar": 3
+        }
+      ]
+    },
+    "opcionadas": {
+      "titulo": "Más propiedades opcionadas",
+      "unidad": "propiedades",
+      "nota": "Propiedades captadas / opcionadas en julio 2026",
+      "items": [
+        {
+          "nombre": "Sol Huerta",
+          "valor": 8.0,
+          "lugar": 1
+        },
+        {
+          "nombre": "Christian Díaz",
+          "valor": 6.0,
+          "lugar": 2
+        },
+        {
+          "nombre": "Christian Alvarado",
+          "valor": 5.0,
+          "lugar": 3
+        }
+      ]
+    },
+    "rentas": {
+      "titulo": "Acumulado en rentas",
+      "unidad": "MXN",
+      "moneda": true,
+      "nota": "Suma del total de la operación de las rentas cerradas en julio 2026",
+      "items": [
+        {
+          "nombre": "Pily González",
+          "valor": 54500.0,
+          "ops": 3,
+          "lugar": 1
+        },
+        {
+          "nombre": "Mariana Vega",
+          "valor": 31000.0,
+          "ops": 2,
+          "lugar": 2
+        },
+        {
+          "nombre": "Christian Díaz",
+          "valor": 28500.0,
+          "ops": 2,
+          "lugar": 3
+        }
+      ]
+    },
+    "ventas": {
+      "titulo": "Acumulado en ventas",
+      "unidad": "MXN",
+      "moneda": true,
+      "nota": "Suma del total de la operación de las ventas cerradas en julio 2026",
+      "items": [
+        {
+          "nombre": "Mariana Vega",
+          "valor": 5229172.915200001,
+          "ops": 2,
+          "lugar": 1
+        },
+        {
+          "nombre": "Christian Alvarado",
+          "valor": 4057000.0,
+          "ops": 1,
+          "lugar": 2
+        },
+        {
+          "nombre": "Judith Diosdado",
+          "valor": 1990000.0,
+          "ops": 1,
+          "lugar": 3
+        }
+      ]
+    }
+  },
+  "teams": [
+    {
+      "nombre": "Team Red-Delta",
+      "color": "red",
+      "integrantes": [
+        {
+          "nombre": "Erik",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Marilú",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Ivette",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Martha Ochoa",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    },
+    {
+      "nombre": "Team Blue-Echo",
+      "color": "blue",
+      "integrantes": [
+        {
+          "nombre": "Pily",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Luis Alcántar",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Adri Regalado",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Gis",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    },
+    {
+      "nombre": "Team White-Bravo",
+      "color": "white",
+      "integrantes": [
+        {
+          "nombre": "Sol",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Adri Calva",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Héctor",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Elena",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    },
+    {
+      "nombre": "Team Romeo-Green",
+      "color": "green",
+      "integrantes": [
+        {
+          "nombre": "Mariana",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Ana Escamilla",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Chris Alvarado",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Liz Pérez",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    },
+    {
+      "nombre": "Team Kilo-Purple",
+      "color": "purple",
+      "integrantes": [
+        {
+          "nombre": "Judith",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Susana",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Angie",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Cintia",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    },
+    {
+      "nombre": "Team Orange-Charlie",
+      "color": "orange",
+      "integrantes": [
+        {
+          "nombre": "Lore Ramos",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Chris Díaz",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        },
+        {
+          "nombre": "Alberto",
+          "sinDatos": false,
+          "recorridos": 0,
+          "mostradas": 0,
+          "opcionadas": 0.0,
+          "leads": 0,
+          "rentas": 0.0,
+          "ventas": 0.0,
+          "cierres": 0
+        }
+      ],
+      "total": {
+        "recorridos": 0,
+        "mostradas": 0,
+        "opcionadas": 0.0,
+        "leads": 0,
+        "rentas": 0.0,
+        "ventas": 0.0,
+        "cierres": 0
+      }
+    }
+  ]
+};
+
+const mxn = n => n.toLocaleString('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0});
+const num = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
+const cero = n => n === 0 ? '<span class="tt-zero">&mdash;</span>' : null;
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+
+const PALETA = {
+  red:{base:'#e4002b',suave:'#fde7eb',linea:'#f7bcc7',texto:'#a10020'},
+  blue:{base:'#0057b8',suave:'#e5eefa',linea:'#b9d0ee',texto:'#013f86'},
+  white:{base:'#5b6472',suave:'#eef1f5',linea:'#d3dae3',texto:'#3b434f'},
+  green:{base:'#1e9e5a',suave:'#e5f5ec',linea:'#b6e0c8',texto:'#14713f'},
+  purple:{base:'#7a4fce',suave:'#f0eafb',linea:'#d3c3f0',texto:'#563394'},
+  orange:{base:'#f07314',suave:'#fdeee0',linea:'#f8cda3',texto:'#a94c07'}
+};
+
+function boton(archivo, etiqueta, solido) {
+  return '<button type="button" class="tt-cap' + (solido ? ' tt-cap--solid' : '') +
+    '" data-shot="' + archivo + '" title="Descarga la imagen y la copia al portapapeles">' +
+    CAM + (etiqueta || 'Capturar') + '</button>';
+}
+
+function aviso(msg) {
+  const t = document.createElement('div');
+  t.className = 'tt-toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-shot]');
+  if (!b) return;
+  const nodo = b.closest('.tt-card') || b.closest('.tt-root');
+  b.disabled = true; nodo.classList.add('tt-capturando');
+  try {
+    const canvas = await html2canvas(nodo, {backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false});
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = b.dataset.shot + '.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      aviso('Imagen descargada y copiada al portapapeles');
+    } catch (e) { aviso('Imagen descargada'); }
+  } catch (e) {
+    aviso('No se pudo generar la imagen');
+  } finally {
+    nodo.classList.remove('tt-capturando'); b.disabled = false;
+  }
+});
+
+/* ---------- Tops ---------- */
+function tarjetaTop(clave, bloque) {
+  const tope = Math.max.apply(null, bloque.items.map(i => i.valor).concat([1]));
+  const empates = bloque.items.filter(i => bloque.items.filter(x => x.lugar === i.lugar).length > 1).map(i => i.lugar);
+  const filas = bloque.items.map(it => {
+    const meta = [
+      it.ops ? it.ops + (it.ops > 1 ? ' operaciones cerradas' : ' operaci\u00f3n cerrada') : '',
+      empates.indexOf(it.lugar) > -1 ? 'empate' : ''
+    ].filter(Boolean).join(' \u00b7 ');
+    return '<div class="tt-row tt-row--' + it.lugar + '">' +
+      '<div class="tt-row__bar" style="width:' + Math.max(12, (it.valor / tope) * 100) + '%"></div>' +
+      '<span class="tt-place">' + it.lugar + '</span>' +
+      '<span><span class="tt-name">' + it.nombre + '</span><span class="tt-meta">' + meta + '</span></span>' +
+      '<span class="tt-val">' + (bloque.moneda ? mxn(it.valor) : num(it.valor) + '<small>' + bloque.unidad + '</small>') + '</span>' +
+      '</div>';
+  }).join('');
+  return '<section class="tt-card">' +
+    '<header class="tt-card__top"><div><h3 class="tt-card__title">' + bloque.titulo + '</h3>' +
+    '<p class="tt-card__note">' + bloque.nota + '</p></div>' + boton('top-' + clave + '-julio-2026') + '</header>' +
+    '<div class="tt-rows">' + filas + '</div></section>';
+}
+
+document.getElementById('tops').innerHTML =
+  '<div class="tt-root">' +
+  '<header class="tt-head"><div><p class="tt-eyebrow">RE/MAX Terra \u00b7 ' + D.periodo + '</p>' +
+  '<h2 class="tt-title">Tops del mes</h2>' +
+  '<p class="tt-sub">Actividad registrada durante julio y operaciones cerradas dentro de julio. ' +
+  'Los montos de renta y venta son el total de la operaci\u00f3n, no la comisi\u00f3n.</p></div>' +
+  boton('tops-julio-2026', 'Capturar todo', true) + '</header>' +
+  '<div class="tt-grid">' +
+  ['recorridos','mostradas','opcionadas','rentas','ventas'].map(k => tarjetaTop(k, D.tops[k])).join('') +
+  '</div><p class="tt-foot">Atribuci\u00f3n por Asesor 1 en cada operaci\u00f3n. Un mismo lugar repetido indica empate.</p></div>';
+
+/* ---------- Teams ---------- */
+const METRICAS = [['recorridos','recorridos'],['mostradas','opciones mostradas'],['opcionadas','propiedades opcionadas'],
+  ['leads','leads'],['rentas','monto en rentas'],['ventas','monto en ventas']];
+const insignias = {};
+METRICAS.forEach(function (m) {
+  const tope = Math.max.apply(null, D.teams.map(t => t.total[m[0]]));
+  if (tope <= 0) return;
+  D.teams.forEach(t => { if (t.total[m[0]] === tope) (insignias[t.nombre] = insignias[t.nombre] || []).push('1\u00ba en ' + m[1]); });
+});
+
+function tarjetaTeam(t) {
+  const c = PALETA[t.color] || PALETA.blue;
+  const estilo = '--tt-team:' + c.base + ';--tt-team-soft:' + c.suave + ';--tt-team-line:' + c.linea + ';--tt-team-ink:' + c.texto;
+  const badges = (insignias[t.nombre] || []).map(b => '<span class="tt-badge">' + b + '</span>').join('');
+  const filas = t.integrantes.map(p =>
+    '<tr><td>' + p.nombre + (p.sinDatos ? ' <span class="tt-nodata">\u00b7 sin datos</span>' : '') + '</td>' +
+    '<td>' + (cero(p.recorridos) || p.recorridos) + '</td>' +
+    '<td>' + (cero(p.mostradas) || p.mostradas) + '</td>' +
+    '<td>' + (cero(p.opcionadas) || num(p.opcionadas)) + '</td>' +
+    '<td>' + (cero(p.leads) || p.leads) + '</td>' +
+    '<td>' + (cero(p.rentas) || mxn(p.rentas)) + '</td>' +
+    '<td>' + (cero(p.ventas) || mxn(p.ventas)) + '</td></tr>').join('');
+  return '<section class="tt-card tt-team" style="' + estilo + '">' +
+    '<header class="tt-card__top"><div><h3 class="tt-team__name"><span class="tt-dot"></span>' + t.nombre + '</h3>' +
+    (badges ? '<p class="tt-badges">' + badges + '</p>' : '') + '</div>' +
+    boton(t.nombre.toLowerCase().replace(/[^a-z]+/g, '-') + '-julio-2026') + '</header>' +
+    '<table class="tt-tbl"><thead><tr><th>Asesor</th><th>Rec.</th><th>Mostradas</th><th>Captadas</th>' +
+    '<th>Leads</th><th>Rentas</th><th>Ventas</th></tr></thead><tbody>' + filas + '</tbody>' +
+    '<tfoot><tr><td>Equipo</td><td>' + t.total.recorridos + '</td><td>' + t.total.mostradas + '</td>' +
+    '<td>' + num(t.total.opcionadas) + '</td><td>' + t.total.leads + '</td>' +
+    '<td>' + mxn(t.total.rentas) + '</td><td>' + mxn(t.total.ventas) + '</td></tr></tfoot></table></section>';
+}
+
+document.getElementById('teams').innerHTML =
+  '<div class="tt-root">' +
+  '<header class="tt-head"><div><p class="tt-eyebrow">RE/MAX Terra \u00b7 Equipos</p>' +
+  '<h2 class="tt-title">Teams</h2><p class="tt-sub">Seis equipos con los mismos indicadores del mes sumados por equipo. ' +
+  'Los montos son el total de la operaci\u00f3n de lo cerrado dentro del periodo.</p></div>' +
+  boton('teams-julio-2026', 'Capturar todo', true) + '</header>' +
+  '<p class="tt-banner"><strong>Los equipos arrancan en ceros.</strong> ' + D.teamsNota + '</p>' +
+  '<div class="tt-grid">' + D.teams.map(tarjetaTeam).join('') + '</div>' +
+  '<p class="tt-foot">Rec. = recorridos \u00b7 Mostradas = opciones mostradas \u00b7 Captadas = propiedades opcionadas. ' +
+  'Los asesores marcados \u201csin datos\u201d todav\u00eda no aparecen en los archivos fuente de julio.</p></div>';
+
+document.querySelectorAll('.tt-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tt-tab').forEach(t => t.setAttribute('aria-selected', String(t === tab)));
+    document.getElementById('tops').hidden = tab.dataset.panel !== 'tops';
+    document.getElementById('teams').hidden = tab.dataset.panel !== 'teams';
+  });
+});
+</script>
+</body>
+</html>

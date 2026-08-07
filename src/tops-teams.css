@@ -1,0 +1,199 @@
+/* Estilos aislados para las secciones "Tops del mes" y "Teams".
+   Todo va con prefijo .tt- para no chocar con el resto del dashboard. */
+
+.tt-root {
+  --tt-ink: #0e1a2b;
+  --tt-muted: #64748b;
+  --tt-line: #e6eaf0;
+  --tt-surface: #ffffff;
+  --tt-canvas: #f6f8fb;
+  --tt-red: #e4002b;
+  --tt-blue: #003da5;
+  --tt-oro: #c8952a;
+  --tt-plata: #8e99a8;
+  --tt-bronce: #a96a38;
+  color: var(--tt-ink);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 0 32px;
+}
+
+/* ---------- encabezado ---------- */
+.tt-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tt-ink);
+  margin-bottom: 22px;
+}
+.tt-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tt-red);
+  margin: 0 0 6px;
+}
+.tt-title {
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.05;
+}
+.tt-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--tt-muted);
+  max-width: 62ch;
+}
+
+/* ---------- botón de captura ---------- */
+.tt-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tt-line);
+  background: var(--tt-surface);
+  color: var(--tt-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.tt-cap:hover { background: var(--tt-canvas); border-color: #cbd5e1; }
+.tt-cap:active { transform: translateY(1px); }
+.tt-cap:focus-visible { outline: 2px solid var(--tt-blue); outline-offset: 2px; }
+.tt-cap[disabled] { opacity: 0.55; cursor: progress; }
+.tt-cap--solid { background: var(--tt-ink); color: #fff; border-color: var(--tt-ink); }
+.tt-cap--solid:hover { background: #1c2c43; border-color: #1c2c43; }
+.tt-cap svg { width: 14px; height: 14px; }
+.tt-capturando .tt-cap { visibility: hidden; } /* no sale el botón en la foto */
+
+/* ---------- rejilla ---------- */
+.tt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* ---------- tarjeta ---------- */
+.tt-card {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-line);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tt-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tt-card__title { font-size: 15px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+.tt-card__note { font-size: 11.5px; color: var(--tt-muted); margin: 3px 0 0; line-height: 1.35; }
+
+/* ---------- filas del podio ---------- */
+.tt-rows { display: flex; flex-direction: column; gap: 6px; }
+.tt-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--tt-canvas);
+  overflow: hidden;
+}
+.tt-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(0, 61, 165, 0.09);
+  border-right: 1px solid rgba(0, 61, 165, 0.18);
+}
+.tt-row--1 .tt-row__bar { background: rgba(228, 0, 43, 0.1); border-right-color: rgba(228, 0, 43, 0.28); }
+.tt-row > * { position: relative; }
+.tt-place {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 800; color: #fff;
+  background: var(--tt-plata);
+}
+.tt-row--1 .tt-place { background: var(--tt-oro); }
+.tt-row--2 .tt-place { background: var(--tt-plata); }
+.tt-row--3 .tt-place { background: var(--tt-bronce); }
+.tt-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.tt-row--1 .tt-name { font-weight: 800; }
+.tt-meta { display: block; font-size: 11px; color: var(--tt-muted); font-weight: 500; }
+.tt-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.tt-val small { font-size: 11px; font-weight: 600; color: var(--tt-muted); margin-left: 5px; }
+.tt-tie { font-size: 10px; font-weight: 700; color: var(--tt-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---------- equipos ---------- */
+.tt-team { border-top: 4px solid var(--tt-team, var(--tt-blue)); }
+.tt-team__name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; margin: 0; }
+.tt-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tt-team); box-shadow: 0 0 0 3px var(--tt-team-soft); }
+.tt-badges { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; }
+.tt-badge {
+  font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: 999px;
+  background: var(--tt-team-soft);
+  color: var(--tt-team-ink);
+  border: 1px solid var(--tt-team-line);
+}
+.tt-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tt-tbl th, .tt-tbl td { padding: 6px 3px; text-align: right; }
+.tt-tbl th:first-child, .tt-tbl td:first-child { text-align: left; }
+.tt-tbl thead th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--tt-muted); font-weight: 700; border-bottom: 1px solid var(--tt-line);
+  white-space: nowrap;
+}
+.tt-tbl tbody tr + tr td { border-top: 1px solid #f1f4f8; }
+.tt-tbl td:first-child { font-weight: 600; }
+.tt-tbl tfoot td {
+  border-top: 2px solid var(--tt-ink);
+  font-weight: 800; padding-top: 8px;
+}
+.tt-zero { color: #b6bfcc; }
+.tt-nodata { font-size: 10px; color: var(--tt-muted); font-weight: 600; }
+
+/* ---------- banner de arranque ---------- */
+.tt-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #fff8e6;
+  border: 1px solid #f2dda3;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #6b4e12;
+  margin-bottom: 16px;
+}
+.tt-banner strong { color: #4a350a; }
+
+/* ---------- pie / aviso ---------- */
+.tt-foot { margin-top: 18px; font-size: 11.5px; color: var(--tt-muted); line-height: 1.5; }
+.tt-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  background: var(--tt-ink); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 10px 16px; border-radius: 999px; z-index: 60;
+  box-shadow: 0 8px 24px rgba(14, 26, 43, 0.25);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tt-toast { animation: tt-in 0.18s ease-out; }
+  @keyframes tt-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+}
