@@ -1,11 +1,17 @@
 import { useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { capturar } from '../lib/captura';
-import { julio2026 } from '../data/julio2026Tops';
-import type { ClaveTop } from '../data/julio2026Tops';
+import { agosto2026 } from '../data/agosto2026Tops';
+import type { ClaveTop } from '../data/agosto2026Tops';
 import './tops-teams.css';
 
-const ORDEN: ClaveTop[] = ['recorridos', 'mostradas', 'opcionadas', 'rentas', 'ventas'];
+const DATOS = agosto2026;
+
+// El orden y la lista de tarjetas viven en el archivo de datos: si un mes no
+// tiene cierta métrica, basta con sacarla de `orden` y no hay que tocar esto.
+const ORDEN: ClaveTop[] = DATOS.orden;
+
+const SUFIJO = DATOS.periodo.toLowerCase().replace(/\s+/g, '-');
 
 const mxn = (n: number) =>
   n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
@@ -76,7 +82,7 @@ export function useAviso() {
 
 function TarjetaTop({ clave, onAviso }: { clave: ClaveTop; onAviso: (m: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const bloque = julio2026.tops[clave];
+  const bloque = DATOS.tops[clave];
   const tope = Math.max(...bloque.items.map((i) => i.valor), 1);
   const empates = new Set(
     bloque.items.filter((i, _, a) => a.filter((x) => x.lugar === i.lugar).length > 1).map((i) => i.lugar)
@@ -89,7 +95,7 @@ function TarjetaTop({ clave, onAviso }: { clave: ClaveTop; onAviso: (m: string) 
           <h3 className="tt-card__title">{bloque.titulo}</h3>
           <p className="tt-card__note">{bloque.nota}</p>
         </div>
-        <BotonCaptura destino={ref} archivo={`top-${clave}-julio-2026`} onAviso={onAviso} />
+        <BotonCaptura destino={ref} archivo={`top-${clave}-${SUFIJO}`} onAviso={onAviso} />
       </header>
 
       <div className="tt-rows">
@@ -101,7 +107,7 @@ function TarjetaTop({ clave, onAviso }: { clave: ClaveTop; onAviso: (m: string) 
               <span className="tt-name">{it.nombre}</span>
               <span className="tt-meta">
                 {[
-                  it.ops ? `${it.ops} ${it.ops > 1 ? 'operaciones cerradas' : 'operación cerrada'}` : '',
+                  it.ops ? `${it.ops} operación${it.ops > 1 ? 'es' : ''} cerrada${it.ops > 1 ? 's' : ''}` : '',
                   empates.has(it.lugar) ? 'empate' : '',
                 ].filter(Boolean).join(' · ')}
               </span>
@@ -112,6 +118,12 @@ function TarjetaTop({ clave, onAviso }: { clave: ClaveTop; onAviso: (m: string) 
             </span>
           </div>
         ))}
+
+        {bloque.items.length === 0 && (
+          <p style={{ margin: 0, padding: '10px 2px', fontSize: 12.5, color: 'var(--tt-muted)' }}>
+            Sin datos capturados para este mes.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -125,14 +137,14 @@ export default function TopsJulio() {
     <div className="tt-root" ref={ref}>
       <header className="tt-head">
         <div>
-          <p className="tt-eyebrow">RE/MAX Terra · {julio2026.periodo}</p>
+          <p className="tt-eyebrow">RE/MAX Terra · {DATOS.periodo}</p>
           <h2 className="tt-title">Tops del mes</h2>
           <p className="tt-sub">
-            Actividad registrada durante julio y operaciones cerradas dentro de julio. Los montos de
-            renta y venta son el total de la operación, no la comisión.
+            Primeros lugares de agosto: actividad registrada durante el mes y operaciones cerradas
+            dentro de agosto. Los montos de renta y venta son el total de la operación, no la comisión.
           </p>
         </div>
-        <BotonCaptura destino={ref} archivo="tops-julio-2026" etiqueta="Capturar todo" solido onAviso={mostrar} />
+        <BotonCaptura destino={ref} archivo={`tops-${SUFIJO}`} etiqueta="Capturar todo" solido onAviso={mostrar} />
       </header>
 
       <div className="tt-grid">
