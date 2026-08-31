@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RE/MAX Terra · Tops de agosto 2026</title>
+<style>
+  body { margin: 0; background: #f6f8fb; padding: 24px clamp(12px, 4vw, 40px) 60px; }
+.tt-root {
+  --tt-ink: #0e1a2b;
+  --tt-muted: #64748b;
+  --tt-line: #e6eaf0;
+  --tt-surface: #ffffff;
+  --tt-canvas: #f6f8fb;
+  --tt-red: #e4002b;
+  --tt-blue: #003da5;
+  --tt-oro: #c8952a;
+  --tt-plata: #8e99a8;
+  --tt-bronce: #a96a38;
+  color: var(--tt-ink);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 0 32px;
+}
+
+.tt-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--tt-ink);
+  margin-bottom: 22px;
+}
+.tt-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--tt-red);
+  margin: 0 0 6px;
+}
+.tt-title {
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.05;
+}
+.tt-sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--tt-muted);
+  max-width: 62ch;
+}
+
+.tt-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tt-line);
+  background: var(--tt-surface);
+  color: var(--tt-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.tt-cap:hover { background: var(--tt-canvas); border-color: #cbd5e1; }
+.tt-cap:active { transform: translateY(1px); }
+.tt-cap:focus-visible { outline: 2px solid var(--tt-blue); outline-offset: 2px; }
+.tt-cap[disabled] { opacity: 0.55; cursor: progress; }
+.tt-cap--solid { background: var(--tt-ink); color: #fff; border-color: var(--tt-ink); }
+.tt-cap--solid:hover { background: #1c2c43; border-color: #1c2c43; }
+.tt-cap svg { width: 14px; height: 14px; }
+.tt-capturando .tt-cap { visibility: hidden; }
+
+.tt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.tt-card {
+  background: var(--tt-surface);
+  border: 1px solid var(--tt-line);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tt-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tt-card__title { font-size: 15px; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+.tt-card__note { font-size: 11.5px; color: var(--tt-muted); margin: 3px 0 0; line-height: 1.35; }
+
+.tt-rows { display: flex; flex-direction: column; gap: 6px; }
+.tt-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--tt-canvas);
+  overflow: hidden;
+}
+.tt-row__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(0, 61, 165, 0.09);
+  border-right: 1px solid rgba(0, 61, 165, 0.18);
+}
+.tt-row--1 .tt-row__bar { background: rgba(228, 0, 43, 0.1); border-right-color: rgba(228, 0, 43, 0.28); }
+.tt-row > * { position: relative; }
+.tt-place {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 800; color: #fff;
+  background: var(--tt-plata);
+}
+.tt-row--1 .tt-place { background: var(--tt-oro); }
+.tt-row--2 .tt-place { background: var(--tt-plata); }
+.tt-row--3 .tt-place { background: var(--tt-bronce); }
+.tt-name { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.tt-row--1 .tt-name { font-weight: 800; }
+.tt-meta { display: block; font-size: 11px; color: var(--tt-muted); font-weight: 500; }
+.tt-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+.tt-val small { font-size: 11px; font-weight: 600; color: var(--tt-muted); margin-left: 5px; }
+
+.tt-foot { margin-top: 18px; font-size: 11.5px; color: var(--tt-muted); line-height: 1.5; }
+.tt-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  background: var(--tt-ink); color: #fff; font-size: 13px; font-weight: 600;
+  padding: 10px 16px; border-radius: 999px; z-index: 60;
+  box-shadow: 0 8px 24px rgba(14, 26, 43, 0.25);
+}
+
+</style>
+</head>
+<body>
+<div id="tops"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const D = {
+  "periodo": "Agosto 2026",
+  "actualizado": "2026-08-25",
+  "orden": [
+    "recorridos",
+    "mostradas",
+    "opcionadas",
+    "rentas",
+    "ventas"
+  ],
+  "tops": {
+    "recorridos": {
+      "titulo": "Más recorridos",
+      "unidad": "recorridos",
+      "nota": "Recorridos registrados en agosto 2026. La oficina cerró el mes con 55.",
+      "items": [
+        {
+          "lugar": 1,
+          "nombre": "Mariana Vega",
+          "valor": 9
+        },
+        {
+          "lugar": 1,
+          "nombre": "Gis García",
+          "valor": 9
+        },
+        {
+          "lugar": 3,
+          "nombre": "Lore Ramos",
+          "valor": 8
+        }
+      ]
+    },
+    "mostradas": {
+      "titulo": "Más opciones mostradas",
+      "unidad": "opciones",
+      "nota": "Opciones mostradas a clientes en agosto 2026. La oficina cerró el mes con 92.",
+      "items": [
+        {
+          "lugar": 1,
+          "nombre": "Mariana Vega",
+          "valor": 18
+        },
+        {
+          "lugar": 2,
+          "nombre": "Gis García",
+          "valor": 15
+        },
+        {
+          "lugar": 3,
+          "nombre": "Christian Díaz",
+          "valor": 13
+        }
+      ]
+    },
+    "opcionadas": {
+      "titulo": "Más propiedades opcionadas",
+      "unidad": "propiedades",
+      "nota": "Propiedades captadas / opcionadas en agosto 2026. La oficina cerró el mes con 35.",
+      "items": [
+        {
+          "lugar": 1,
+          "nombre": "Sol Huerta",
+          "valor": 9
+        },
+        {
+          "lugar": 2,
+          "nombre": "Erik Trotter",
+          "valor": 4
+        },
+        {
+          "lugar": 2,
+          "nombre": "Angie Bostal",
+          "valor": 4
+        }
+      ]
+    },
+    "rentas": {
+      "titulo": "Acumulado en rentas",
+      "unidad": "MXN",
+      "moneda": true,
+      "nota": "Suma del total de la operación de las rentas de agosto 2026. Total de la oficina: $187,670.",
+      "items": [
+        {
+          "lugar": 1,
+          "nombre": "Lore Ramos",
+          "valor": 50700,
+          "ops": 1
+        },
+        {
+          "lugar": 2,
+          "nombre": "Gis García",
+          "valor": 28800,
+          "ops": 2
+        },
+        {
+          "lugar": 3,
+          "nombre": "Angie Bostal",
+          "valor": 26170,
+          "ops": 2
+        }
+      ]
+    },
+    "ventas": {
+      "titulo": "Acumulado en ventas",
+      "unidad": "MXN",
+      "moneda": true,
+      "nota": "Suma del total de la operación de las ventas de agosto 2026. Total de la oficina: $3,180,000.",
+      "items": [
+        {
+          "lugar": 1,
+          "nombre": "Pily González",
+          "valor": 1980000,
+          "ops": 1
+        },
+        {
+          "lugar": 2,
+          "nombre": "Lore Ramos",
+          "valor": 1200000,
+          "ops": 1
+        }
+      ]
+    }
+  }
+};
+
+const mxn = n => n.toLocaleString('es-MX', {style:'currency', currency:'MXN', maximumFractionDigits:0});
+const num = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
+const SUFIJO = D.periodo.toLowerCase().replace(/\s+/g, '-');
+const CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+
+function boton(archivo, etiqueta, solido) {
+  return '<button type="button" class="tt-cap' + (solido ? ' tt-cap--solid' : '') +
+    '" data-shot="' + archivo + '" title="Descarga la imagen y la copia al portapapeles">' +
+    CAM + (etiqueta || 'Capturar') + '</button>';
+}
+
+function aviso(msg) {
+  const t = document.createElement('div');
+  t.className = 'tt-toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-shot]');
+  if (!b) return;
+  const nodo = b.closest('.tt-card') || b.closest('.tt-root');
+  b.disabled = true; nodo.classList.add('tt-capturando');
+  try {
+    const canvas = await html2canvas(nodo, {backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false});
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = b.dataset.shot + '.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      aviso('Imagen descargada y copiada al portapapeles');
+    } catch (e) { aviso('Imagen descargada'); }
+  } catch (e) {
+    aviso('No se pudo generar la imagen');
+  } finally {
+    nodo.classList.remove('tt-capturando'); b.disabled = false;
+  }
+});
+
+function tarjetaTop(clave, bloque) {
+  const tope = Math.max.apply(null, bloque.items.map(i => i.valor).concat([1]));
+  const empates = bloque.items.filter(i => bloque.items.filter(x => x.lugar === i.lugar).length > 1).map(i => i.lugar);
+  const filas = bloque.items.map(it => {
+    const meta = [
+      it.ops ? it.ops + ' operaci\u00f3n' + (it.ops > 1 ? 'es' : '') + ' cerrada' + (it.ops > 1 ? 's' : '') : '',
+      empates.indexOf(it.lugar) > -1 ? 'empate' : ''
+    ].filter(Boolean).join(' \u00b7 ');
+    return '<div class="tt-row tt-row--' + it.lugar + '">' +
+      '<div class="tt-row__bar" style="width:' + Math.max(12, (it.valor / tope) * 100) + '%"></div>' +
+      '<span class="tt-place">' + it.lugar + '</span>' +
+      '<span><span class="tt-name">' + it.nombre + '</span><span class="tt-meta">' + meta + '</span></span>' +
+      '<span class="tt-val">' + (bloque.moneda ? mxn(it.valor) : num(it.valor) + '<small>' + bloque.unidad + '</small>') + '</span>' +
+      '</div>';
+  }).join('');
+  return '<section class="tt-card">' +
+    '<header class="tt-card__top"><div><h3 class="tt-card__title">' + bloque.titulo + '</h3>' +
+    '<p class="tt-card__note">' + bloque.nota + '</p></div>' + boton('top-' + clave + '-' + SUFIJO) + '</header>' +
+    '<div class="tt-rows">' + filas + '</div></section>';
+}
+
+document.getElementById('tops').innerHTML =
+  '<div class="tt-root">' +
+  '<header class="tt-head"><div><p class="tt-eyebrow">RE/MAX Terra \u00b7 ' + D.periodo + '</p>' +
+  '<h2 class="tt-title">Tops del mes</h2>' +
+  '<p class="tt-sub">Primeros lugares de agosto: actividad registrada durante el mes y operaciones cerradas ' +
+  'dentro de agosto. Los montos de renta y venta son el total de la operaci\u00f3n, no la comisi\u00f3n.</p></div>' +
+  boton('tops-' + SUFIJO, 'Capturar todo', true) + '</header>' +
+  '<div class="tt-grid">' +
+  D.orden.map(k => tarjetaTop(k, D.tops[k])).join('') +
+  '</div><p class="tt-foot">Atribuci\u00f3n por Asesor 1 en cada operaci\u00f3n. Un mismo lugar repetido indica empate.</p></div>';
+</script>
+</body>
+</html>
