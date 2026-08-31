@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { julio2026 } from '../data/julio2026Tops';
-import type { ColorTeam, Team, TotalTeam } from '../data/julio2026Tops';
+import { julio2026 } from '../data/agosto2026Tops';
+import type { ColorTeam, Team, TotalTeam } from '../data/agosto2026Tops';
 import { BotonCaptura, useAviso } from './TopsJulio';
 import './tops-teams.css';
 
