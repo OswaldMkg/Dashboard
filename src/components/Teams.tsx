@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { julio2026 } from '../data/agosto2026Tops';
-import type { ColorTeam, Team, TotalTeam } from '../data/agosto2026Tops';
+import { agosto2026Teams } from '../data/agosto2026Teams';
+import type { ColorTeam, Team, TotalTeam } from '../data/agosto2026Teams';
 import { BotonCaptura, useAviso } from './TopsJulio';
 import './tops-teams.css';
 
@@ -121,7 +121,7 @@ function TarjetaTeam({ team, insignias, onAviso }: { team: Team; insignias: stri
 export default function Teams() {
   const ref = useRef<HTMLDivElement>(null);
   const { aviso, mostrar } = useAviso();
-  const teams = julio2026.teams as readonly Team[];
+  const teams = agosto2026Teams.teams as readonly Team[];
   const insignias = lideres(teams);
 
   return (
@@ -139,7 +139,7 @@ export default function Teams() {
       </header>
 
       <p className="tt-banner">
-        <strong>Los equipos arrancan en ceros.</strong> {julio2026.teamsNota}
+        <strong>Los equipos arrancan en ceros.</strong> {agosto2026Teams.teamsNota}
       </p>
 
       <div className="tt-grid">
