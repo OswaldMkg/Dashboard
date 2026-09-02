@@ -80,9 +80,20 @@
 /* ---------- rejilla ---------- */
 .tt-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* 420px es el ancho mínimo real que necesita la tabla de 7 columnas.
+     min(100%, 420px) evita que se desborde en pantallas angostas. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
   gap: 16px;
 }
+.tt-grid > * { min-width: 0; } /* sin esto, una celda ancha estira la columna del grid */
+
+/* "Vista para compartir": fuerza 3 columnas de ancho fijo sin importar el tamaño
+   de la ventana, para que la imagen del grupo salga siempre igual (2 filas de 3). */
+.tt-grid--fijo {
+  grid-template-columns: repeat(3, 424px);
+  width: max-content;
+}
+.tt-fijo .tt-head, .tt-fijo .tt-banner, .tt-fijo .tt-foot { max-width: 1304px; }
 
 /* ---------- tarjeta ---------- */
 .tt-card {
@@ -152,13 +163,31 @@
   color: var(--tt-team-ink);
   border: 1px solid var(--tt-team-line);
 }
-.tt-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.tt-tbl {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed; /* reparte el ancho por columna en vez de dejar que el contenido lo estire */
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+/* Anchos por columna (suman 100%) */
+.tt-tbl .tt-c-asesor { width: 23%; }
+.tt-tbl .tt-c-num    { width: 8%; }
+.tt-tbl .tt-c-num2   { width: 11%; }
+.tt-tbl .tt-c-num3   { width: 10%; }
+.tt-tbl .tt-c-money  { width: 18.5%; }
+
 .tt-tbl th, .tt-tbl td { padding: 6px 3px; text-align: right; }
-.tt-tbl th:first-child, .tt-tbl td:first-child { text-align: left; }
+.tt-tbl th:first-child, .tt-tbl td:first-child {
+  text-align: left;
+  overflow-wrap: anywhere; /* nombres largos parten de línea en vez de desbordar */
+}
+.tt-tbl .tt-n { white-space: nowrap; overflow: hidden; }
+.tt-tbl .tt-m { font-size: 11.5px; } /* los montos, un punto más chicos para que quepan holgados */
 .tt-tbl thead th {
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.02em;
   color: var(--tt-muted); font-weight: 700; border-bottom: 1px solid var(--tt-line);
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden;
 }
 .tt-tbl tbody tr + tr td { border-top: 1px solid #f1f4f8; }
 .tt-tbl td:first-child { font-weight: 600; }
@@ -168,6 +197,18 @@
 }
 .tt-zero { color: #b6bfcc; }
 .tt-nodata { font-size: 10px; color: var(--tt-muted); font-weight: 600; }
+
+/* Red de seguridad: si algún dato futuro fuera aún más ancho, se recorta dentro
+   de la tarjeta y no se encima sobre la tarjeta de al lado. */
+.tt-team { overflow: hidden; }
+
+/* Pantallas angostas / celular: misma tabla, todo más compacto. */
+@media (max-width: 560px) {
+  .tt-tbl { font-size: 11.5px; }
+  .tt-tbl th, .tt-tbl td { padding: 6px 1px; }
+  .tt-tbl .tt-m { font-size: 10.5px; }
+  .tt-tbl thead th { font-size: 9px; letter-spacing: 0.02em; }
+}
 
 /* ---------- banner de arranque ---------- */
 .tt-banner {
@@ -197,3 +238,6 @@
   .tt-toast { animation: tt-in 0.18s ease-out; }
   @keyframes tt-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 }
+
+/* botones del encabezado de Teams */
+.tt-acciones { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }

@@ -23,17 +23,45 @@ function cargarHtml2Canvas(): Promise<any> {
   return pendiente;
 }
 
+const MARGEN = 18; // margen blanco alrededor de la imagen final, en px de CSS
+
 export async function capturar(nodo: HTMLElement | null, archivo: string): Promise<string> {
   if (!nodo) throw new Error('No encontré la sección a capturar');
   const html2canvas = await cargarHtml2Canvas();
-  const canvas = await html2canvas(nodo, {
+
+  const escala = Math.min(2, window.devicePixelRatio || 1) * 1.5;
+  const caja = nodo.getBoundingClientRect();
+
+  const bruto: HTMLCanvasElement = await html2canvas(nodo, {
     backgroundColor: '#ffffff',
-    scale: Math.min(2, window.devicePixelRatio || 1) * 1.5,
+    scale: escala,
     useCORS: true,
     logging: false,
+    // Tomar el tamaño real del contenido, no solo lo que se ve en pantalla.
+    width: Math.ceil(Math.max(nodo.scrollWidth, caja.width)),
+    height: Math.ceil(Math.max(nodo.scrollHeight, caja.height)),
+    // Sin esto la imagen sale desfasada cuando la página está scrolleada.
+    scrollX: -window.scrollX,
+    scrollY: -window.scrollY,
+    windowWidth: document.documentElement.scrollWidth,
+    windowHeight: document.documentElement.scrollHeight,
   });
 
-  const blob: Blob = await new Promise((res) => canvas.toBlob((b: Blob) => res(b), 'image/png'));
+  // Marco blanco: se dibuja el resultado sobre un lienzo un poco más grande.
+  const m = Math.round(MARGEN * escala);
+  const canvas = document.createElement('canvas');
+  canvas.width = bruto.width + m * 2;
+  canvas.height = bruto.height + m * 2;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bruto, m, m);
+  }
+
+  const blob = await new Promise<Blob>((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error('No se pudo generar la imagen'))), 'image/png'),
+  );
 
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { agosto2026Teams } from '../data/agosto2026Teams';
 import type { ColorTeam, Team, TotalTeam } from '../data/agosto2026Teams';
@@ -16,6 +16,13 @@ const PALETA: Record<ColorTeam, { base: string; suave: string; linea: string; te
 
 const mxn = (n: number) =>
   n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
+
+// Versión corta para las celdas angostas de la tabla: a partir del millón
+// se abrevia ($1.98 M) para que el número nunca se salga de la columna.
+const mxnCorto = (n: number) =>
+  n >= 1_000_000
+    ? `$${(n / 1_000_000).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M`
+    : mxn(n);
 
 const num = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
@@ -76,12 +83,21 @@ function TarjetaTeam({ team, insignias, onAviso }: { team: Team; insignias: stri
       </header>
 
       <table className="tt-tbl">
+        <colgroup>
+          <col className="tt-c-asesor" />
+          <col className="tt-c-num" />
+          <col className="tt-c-num2" />
+          <col className="tt-c-num2" />
+          <col className="tt-c-num3" />
+          <col className="tt-c-money" />
+          <col className="tt-c-money" />
+        </colgroup>
         <thead>
           <tr>
             <th>Asesor</th>
             <th>Rec.</th>
-            <th>Mostradas</th>
-            <th>Captadas</th>
+            <th>Most.</th>
+            <th>Capt.</th>
             <th>Leads</th>
             <th>Rentas</th>
             <th>Ventas</th>
@@ -93,24 +109,24 @@ function TarjetaTeam({ team, insignias, onAviso }: { team: Team; insignias: stri
               <td>
                 {p.nombre} {p.sinDatos && <span className="tt-nodata">· sin datos</span>}
               </td>
-              <td>{cifra(p.recorridos)}</td>
-              <td>{cifra(p.mostradas)}</td>
-              <td>{cifra(p.opcionadas)}</td>
-              <td>{cifra(p.leads)}</td>
-              <td>{p.rentas ? mxn(p.rentas) : <span className="tt-zero">—</span>}</td>
-              <td>{p.ventas ? mxn(p.ventas) : <span className="tt-zero">—</span>}</td>
+              <td className="tt-n">{cifra(p.recorridos)}</td>
+              <td className="tt-n">{cifra(p.mostradas)}</td>
+              <td className="tt-n">{cifra(p.opcionadas)}</td>
+              <td className="tt-n">{cifra(p.leads)}</td>
+              <td className="tt-n tt-m">{p.rentas ? mxnCorto(p.rentas) : <span className="tt-zero">—</span>}</td>
+              <td className="tt-n tt-m">{p.ventas ? mxnCorto(p.ventas) : <span className="tt-zero">—</span>}</td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr>
             <td>Equipo</td>
-            <td>{team.total.recorridos}</td>
-            <td>{team.total.mostradas}</td>
-            <td>{num(team.total.opcionadas)}</td>
-            <td>{team.total.leads}</td>
-            <td>{mxn(team.total.rentas)}</td>
-            <td>{mxn(team.total.ventas)}</td>
+            <td className="tt-n">{team.total.recorridos}</td>
+            <td className="tt-n">{team.total.mostradas}</td>
+            <td className="tt-n">{num(team.total.opcionadas)}</td>
+            <td className="tt-n">{team.total.leads}</td>
+            <td className="tt-n tt-m">{mxnCorto(team.total.rentas)}</td>
+            <td className="tt-n tt-m">{mxnCorto(team.total.ventas)}</td>
           </tr>
         </tfoot>
       </table>
@@ -121,11 +137,12 @@ function TarjetaTeam({ team, insignias, onAviso }: { team: Team; insignias: stri
 export default function Teams() {
   const ref = useRef<HTMLDivElement>(null);
   const { aviso, mostrar } = useAviso();
+  const [vistaFija, setVistaFija] = useState(false);
   const teams = agosto2026Teams.teams as readonly Team[];
   const insignias = lideres(teams);
 
   return (
-    <div className="tt-root" ref={ref}>
+    <div className={`tt-root${vistaFija ? ' tt-fijo' : ''}`} ref={ref}>
       <header className="tt-head">
         <div>
           <p className="tt-eyebrow">RE/MAX Terra · Equipos</p>
@@ -135,7 +152,17 @@ export default function Teams() {
             total de la operación de lo cerrado dentro del periodo.
           </p>
         </div>
-        <BotonCaptura destino={ref} archivo="teams" etiqueta="Capturar todo" solido onAviso={mostrar} />
+        <div className="tt-acciones">
+          <button
+            type="button"
+            className="tt-cap"
+            onClick={() => setVistaFija((v) => !v)}
+            title="Fija la rejilla en 3 columnas para que la imagen del grupo salga siempre igual"
+          >
+            {vistaFija ? 'Vista automática' : 'Vista 3 columnas'}
+          </button>
+          <BotonCaptura destino={ref} archivo="teams" etiqueta="Capturar todo" solido onAviso={mostrar} />
+        </div>
       </header>
 
       <p className="tt-banner">
@@ -149,8 +176,9 @@ export default function Teams() {
       </div>
 
       <p className="tt-foot">
-        Rec. = recorridos · Mostradas = opciones mostradas · Captadas = propiedades opcionadas ·
-        Rentas y Ventas = total de la operación de lo cerrado en el periodo.
+        Rec. = recorridos · Most. = opciones mostradas · Capt. = propiedades opcionadas ·
+        Rentas y Ventas = total de la operación de lo cerrado en el periodo (los montos de un
+        millón o más se abrevian, p. ej. $1.98 M).
       </p>
 
       {aviso && <div className="tt-toast">{aviso}</div>}
